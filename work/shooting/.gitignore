@@ -1,0 +1,7 @@
+node_modules
+src
+pixi.d.ts
+pakage-lock.json
+package.json
+tsconfig.json
+webpack.config.js

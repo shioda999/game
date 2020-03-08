@@ -6,7 +6,7 @@ export class Sound {
         if(index !== -1){
             return
         }
-        const inst = new Audio(fileName)
+        const inst = new Audio('asset/' + fileName)
         inst.volume = 0.5
         this.data.push(inst)
         this.name_list.push(name)

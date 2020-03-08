@@ -26,7 +26,7 @@ export class GraphicManager{
     private load(){
         if(this.loader.loading)return
         const spriteName = this.loadingList.pop()
-        const jsonFileName = spriteName + '_sprite.json'
+        const jsonFileName = 'asset/' + spriteName + '_sprite.json'
         this.loadedList.push(spriteName)
         this.loader.add(jsonFileName).load(()=>{
             let texture: PIXI.Texture

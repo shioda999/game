@@ -37,8 +37,8 @@ export class Obj{
         this.player_x = x, this.player_y = y
     }
     public check_and_delete(){
-        let flag = this.x > -WIDTH / 3 && this.x < WIDTH * 4 / 3
-            && this. y > -HEIGHT / 3 && this.y < HEIGHT * 4 / 3 || this.flag
+        let flag = this.x > -WIDTH / 3 && this.x < WIDTH * 11 / 10
+            && this. y > -HEIGHT / 3 && this.y < HEIGHT * 11 / 10 || this.flag
         if(!flag)this.release()
         return flag
     }

@@ -40,13 +40,12 @@ export class Game extends Scene {
 		})
 		Sound.load("test.mp3", "bgm")
 		Sound.load("player_shot.mp3", "pshot")
-		Sound.set_volume("pshot", 0.3)
+		Sound.set_volume("pshot", 0.15)
 		Sound.play("bgm", true)
 	}
 	private loop = ()=> {
 		if(this.releaseFlag)return
 		requestAnimationFrame(this.loop)
-		this.item_manager.update()
         this.key.RenewKeyData()
 		this.objmanager.update()
 		this.objmanager.draw()
@@ -55,6 +54,7 @@ export class Game extends Scene {
 			this.curTime = new Date().getTime()
 			this.updateFPS(this.curTime - this.prevTime)
 		}
+		this.item_manager.update()
 		this.countFrame++
 	}
 	private decide(){

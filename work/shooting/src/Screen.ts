@@ -36,7 +36,7 @@ export class Screen {
 
         const frame = new PIXI.Graphics()
         frame.beginFill(0,0)
-        frame.lineStyle((document.documentElement.clientWidth - WIDTH) / 2, 0x1099bb,1.0, 1)
+        frame.lineStyle(Math.max(this.container.x, this.container.y), 0x1099bb,1.0, 1)
         frame.drawRect(this.container.x, this.container.y, WIDTH, HEIGHT)
         frame.endFill()
         frame.zIndex = 1

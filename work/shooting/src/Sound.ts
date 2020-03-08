@@ -6,7 +6,9 @@ export class Sound {
         if(index !== -1){
             return
         }
-        this.data.push(new Audio(fileName))
+        const inst = new Audio(fileName)
+        inst.volume = 0.5
+        this.data.push(inst)
         this.name_list.push(name)
     }
     public static play(name: string, loop = false){

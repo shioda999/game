@@ -1,0 +1,18 @@
+1.メモリリーク解消(1/5　一応解消された？ destroy関数を使った。)
+4.(解消)RenewKeyData関数が複数のスレッドで呼び出されるため、isPress関数がうまく動かないときがある。
+itemManagerはSceneがわでupdateを呼ぶことにした
+5.playerの速度ははじめからそこそこ高めに設定しておく。upgradeも無し
+6.なぜかMicrosoftEdgeだとgamepadが認識されない。
+7.(解消)なぜかウィンドウサイズ変えるとplayer消える
+cashe as bitmap を falseにしたら消えた。よくわからん
+8.(解消)画像の大きさが変だったがTilingsprite辞めたらなおった
+9.(解消)spriteをクローンしないと一枚しか表示できない。
+
+98.option画面
+99.効果音
+
+アップグレード要素
+1.弾の攻撃力
+2.弾の速さ
+3.弾の数
+4.盾の数

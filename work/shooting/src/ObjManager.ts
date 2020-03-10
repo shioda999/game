@@ -4,12 +4,15 @@ import {Player} from './Player'
 import { P_Straight, Straight, FirstSlow} from './Bullet'
 import {WIDTH, HEIGHT} from './global'
 import {Enemy, Enemy_A} from './Enemy'
+import {Stage}from './Stage'
 export class ObjManager{
+    stage: Stage
     player: Player[] = []
     player_bullet: any[] = []
     enemy: any[] = []
     enemy_bullet: any[] = []
     constructor(container : PIXI.Container){
+        this.stage = new Stage()
         Obj.SetGlobalContainer(container)
         Obj.SetCreateFunc(this.CreateObj, this.CreateBullet)
     }
@@ -35,6 +38,9 @@ export class ObjManager{
     }
     public update(){
         let target = [this.player, this.player_bullet, this.enemy, this.enemy_bullet]
+
+        this.CreateObjectsFromStageData()
+
         target.forEach(n =>{
             n.forEach(n => n.update())
         })
@@ -60,6 +66,13 @@ export class ObjManager{
     }
     public setPlayer(){
         this.CreateObj("player", WIDTH / 2, HEIGHT * 3 / 4, false)
-        this.CreateObj("enemy_A", WIDTH / 2, HEIGHT / 3, true)
+    }
+    private CreateObjectsFromStageData(){
+        let data = this.stage.readStageData(this.enemy.length)
+        if(data == undefined)return
+        if(data === "end")return
+        data.forEach(n => {
+            this.CreateObj(n.name, n.param1, n.param2, true)
+        })
     }
 }

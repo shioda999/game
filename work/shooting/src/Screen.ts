@@ -3,11 +3,15 @@ import {WIDTH, HEIGHT} from './global'
 export class Screen {
     private static instance: Screen
     private container: PIXI.Container
-    private app: PIXI.Application
+    public app: PIXI.Application
+    public OnresizeFunctions = []
     constructor(){
         this.container = new PIXI.Container()
         this.setPosition()
-        window.onresize = this.setPosition
+        this.AddOnresizeFunc(this.setPosition)
+        window.onresize = () => {
+            this.OnresizeFunctions.forEach(n => n())
+        }
     }
     public static init(){
         if (!this.instance)
@@ -44,5 +48,11 @@ export class Screen {
         this.container.sortableChildren = true
         this.app.stage.addChild(frame)
         this.app.stage.addChild(this.container)
+    }
+    public AddOnresizeFunc(func){
+        this.OnresizeFunctions.push(func)
+    }
+    public DeleteOnresizeFunc(func){
+        this.OnresizeFunctions = this.OnresizeFunctions.filter(n => n != func)
     }
 }

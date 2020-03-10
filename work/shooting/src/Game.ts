@@ -6,6 +6,7 @@ import {Player} from './Player'
 import {ObjManager} from './ObjManager'
 import {GraphicManager} from './GraphicManager'
 import {Sound} from './Sound'
+import { Stage } from "./Stage";
 const FPS_UPDATE_FREQ = 20
 export class Game extends Scene {
 	private curTime: number
@@ -18,19 +19,18 @@ export class Game extends Scene {
 	private releaseFlag: boolean = false
 	private objmanager: ObjManager
     constructor(private container: PIXI.Container) {
-    	super(WIDTH / 2, HEIGHT / 2, WIDTH / 3, HEIGHT / 10, container,
-			() => this.decide(), () => this.cancel()
-		)
+		super()
+		this.release = () => {
+			this.objmanager.release()
+			this.releaseFlag = true
+			Sound.stop("bgm")
+		}
 		this.objmanager = new ObjManager(container)
+		new Stage()
 		const inst = GraphicManager.GetInstance()
-		inst.loadGraphic("new_player")
-		inst.loadGraphic("pbullet_blue")
-		inst.loadGraphic("pbullet_red")
-		inst.loadGraphic("pbullet_green")
+		inst.loadGraphic("player")
 		inst.loadGraphic("bullet")
 		inst.loadGraphic("pbullet")
-		inst.loadGraphic("bullet_red")
-		inst.loadGraphic("new_bullet")
 		inst.SetLoadedFunc(() => {
 			this.objmanager.setPlayer()
 			this.key = Key.GetInstance()
@@ -54,14 +54,9 @@ export class Game extends Scene {
 			this.curTime = new Date().getTime()
 			this.updateFPS(this.curTime - this.prevTime)
 		}
-		this.item_manager.update()
 		this.countFrame++
-	}
-	private decide(){
-        //this.gotoScene("game")
-	}
-	private cancel(){
-        this.gotoScene("back")
+		if(this.key.IsPress("cancel"))
+        	this.gotoScene("back")
 	}
 	private orgRound(value, base) {
 		return Math.round(value * base) / base;
@@ -88,10 +83,5 @@ export class Game extends Scene {
 		this.fpsContainer = new PIXI.Container()
 		this.fpsContainer.zIndex = 1
 		this.container.addChild(this.fpsContainer)
-	}
-	public release(){
-		this.objmanager.release()
-		this.releaseFlag = true
-		Sound.stop("bgm")
 	}
 }

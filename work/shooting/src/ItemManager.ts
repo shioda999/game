@@ -64,4 +64,7 @@ export class ItemManager{
             this.items[i].sendCurrentSelectingItemID(this.currentFocusId)
         }
     }
+    public getFocus(){
+        return this.currentFocusId
+    }
 }

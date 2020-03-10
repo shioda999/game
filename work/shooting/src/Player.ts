@@ -9,7 +9,7 @@ export class Player extends Obj{
     private count = 0
     private damage_count = 0
     constructor(x: number, y: number, is_enemy: boolean){
-        super("new_player", x, y, is_enemy)
+        super("player", x, y, is_enemy)
     }
     public update(){
         let add_x = 0

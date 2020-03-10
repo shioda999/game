@@ -7,7 +7,7 @@ export class Enemy extends Obj{
 }
 export class Enemy_A extends Enemy{
     constructor(x: number, y: number, is_enemy: boolean){
-        super("new_player", x, y, is_enemy)
+        super("player", x, y, is_enemy)
     }
     public update(){
         this.count++

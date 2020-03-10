@@ -1,0 +1,19 @@
+{
+	"stage": [
+		{
+			"name": "enemy_A",
+			"param1": 100,
+			"param2": 200
+		},
+		{
+			"name": "enemy_A",
+			"param1": 60,
+			"param2": 130
+		},
+		{
+			"name": "enemy_A",
+			"param1": 10,
+			"param2": 200
+		}
+	]
+}

@@ -5,6 +5,7 @@ import {Key} from './key'
 import {SceneType, Scene} from './Scene'
 import {Fade} from './Fade'
 import {GraphicManager} from './GraphicManager'
+import { CreateStageTool } from "./CreateStageTool"
 export class SceneManager{
     private key: Key
     private static instance: SceneManager
@@ -44,6 +45,7 @@ export class SceneManager{
             this.scene = new {
               title: Title,
               game: Game,
+              make_stage: CreateStageTool
             }[name](this.container)
         })
     }

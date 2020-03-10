@@ -1,6 +1,7 @@
 import * as PIXI from "pixi.js"
 export class GraphicManager{
     private callback: () => any
+    private preloadList: string[] = []
     private loadedList: string[] = []
     private loadingList: string[] = []
     private texture: PIXI.Texture[][] = []
@@ -17,17 +18,16 @@ export class GraphicManager{
         spriteName.forEach(n => this.loadGraphic(n))
     }
     public loadGraphic(spriteName: string){
-        if(this.loadingList.indexOf(spriteName) === -1
-            && this.loadedList.indexOf(spriteName) === -1){
-            this.loadingList.push(spriteName)
+        if(!this.is_registered(spriteName)){
+            this.preloadList.push(spriteName)
             this.load()
         }
     }
     private load(){
         if(this.loader.loading)return
-        const spriteName = this.loadingList.pop()
+        const spriteName = this.preloadList.pop()
         const jsonFileName = 'asset/' + spriteName + '_sprite.json'
-        this.loadedList.push(spriteName)
+        this.loadingList.push(spriteName)
         this.loader.add(jsonFileName).load(()=>{
             let texture: PIXI.Texture
             this.texture.push([])
@@ -39,8 +39,10 @@ export class GraphicManager{
                 this.texture[k].push(texture)
                 count++
             }
-            if(this.loadingList.length === 0 && this.callback){
-                this.callback()
+            this.loadingList = this.loadingList.filter(n => n !== spriteName)
+            this.loadedList.push(spriteName)
+            if(!this.is_loading()){
+                if(this.callback)this.callback()
                 this.callback = undefined
             }
             else{
@@ -50,12 +52,10 @@ export class GraphicManager{
     }
     public SetLoadedFunc(callback: () => any){
         this.callback = callback
-        if(this.loadingList.length === 0 && this.callback){
+        if(!this.is_loading() && this.callback){
             this.callback()
+            this.callback = undefined
         }
-    }
-    public isLoaded(spriteName: string){
-        return this.loadedList.indexOf(spriteName) !== -1
     }
     public GetSprite(spriteName: string, index?: number[]){
         const i = this.loadedList.indexOf(spriteName)
@@ -67,12 +67,20 @@ export class GraphicManager{
         if(index == undefined)textures = this.texture[i]
         else textures = this.texture[i].filter((n, x) => index.indexOf(x) !== -1)
         sprite = new PIXI.AnimatedSprite(textures)
-        if(index || index && index.length > 1){
+        if(!index || index && index.length > 1){
             sprite.animationSpeed = 0.5
             sprite.play()
         }
         sprite.anchor.x = sprite.anchor.y = 0.5
         sprite.blendMode = PIXI.BLEND_MODES.ADD
         return sprite
+    }
+    private is_loading(){
+        return this.loadingList.length || this.preloadList.length
+    }
+    private is_registered(spriteName: string){
+        return !(this.preloadList.indexOf(spriteName) === -1
+        && this.loadingList.indexOf(spriteName) === -1
+        && this.loadedList.indexOf(spriteName) === -1)
     }
 }

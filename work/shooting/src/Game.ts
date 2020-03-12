@@ -55,8 +55,7 @@ export class Game extends Scene {
 			this.updateFPS(this.curTime - this.prevTime)
 		}
 		this.countFrame++
-		if(this.key.IsPress("cancel"))
-        	this.gotoScene("back")
+		if(this.key.IsPress("cancel"))this.gotoScene("back")
 	}
 	private orgRound(value, base) {
 		return Math.round(value * base) / base;

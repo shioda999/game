@@ -15,13 +15,13 @@ export class SceneManager{
         Scene.SetGotoSceneFunction((v) => this.gotoScene(v))
 
         this.key = Key.GetInstance()
-        this.key.key_register({code: ["r"], name: "r"})
-        this.key.key_register({code: ["z", "PAD-A"], name: "decide"})
-        this.key.key_register({code: ["x", "PAD-B"], name: "cancel"})
-        this.key.key_register({code: ["ArrowUp", "PAD-UP"], name: "Up"})
-        this.key.key_register({code: ["ArrowDown", "PAD-DOWN"], name: "Down"})
-        this.key.key_register({code: ["ArrowLeft", "PAD-LEFT"], name: "Left"})
-        this.key.key_register({code: ["ArrowRight", "PAD-RIGHT"], name: "Right"})
+        this.key.key_register({code: ["KeyR"], name: "r"})
+        this.key.key_register({code: ["KeyZ", "PadA"], name: "decide"})
+        this.key.key_register({code: ["KeyX", "PadB"], name: "cancel"})
+        this.key.key_register({code: ["ArrowUp", "PadUp"], name: "Up"})
+        this.key.key_register({code: ["ArrowDown", "PadDown"], name: "Down"})
+        this.key.key_register({code: ["ArrowLeft", "PadLeft"], name: "Left"})
+        this.key.key_register({code: ["ArrowRight", "PadRight"], name: "Right"})
         this.gotoScene("title")
     }
     public static init(container: PIXI.Container)
@@ -43,9 +43,9 @@ export class SceneManager{
         const fade = new Fade(this.container, ()=>{
             this.container.removeChildren()
             this.scene = new {
-              title: Title,
-              game: Game,
-              make_stage: CreateStageTool
+                title: Title,
+                game: Game,
+                make_stage: CreateStageTool
             }[name](this.container)
         })
     }

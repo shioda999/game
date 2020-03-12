@@ -10,13 +10,13 @@ export class Fade{
         effect.filterArea = new PIXI.Rectangle(container.x, container.y, WIDTH, HEIGHT);
         container.addChild(effect);
         try{
-             this.filter = new PIXI.Filter(null, shaderFrag,
+            this.filter = new PIXI.Filter(null, shaderFrag,
                 {time: 0,
-                 len: 800,
-                 center_x : container.x + WIDTH / 2,
-                 center_y : container.y + HEIGHT / 2
+                len: 800,
+                center_x : container.x + WIDTH / 2,
+                center_y : container.y + HEIGHT / 2
                 });
-             effect.filters = [this.filter];
+            effect.filters = [this.filter];
         }
         catch{
             alert("GLSLのコードにエラーがあります。")

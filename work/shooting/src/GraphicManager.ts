@@ -71,6 +71,7 @@ export class GraphicManager{
             sprite.animationSpeed = 0.5
             sprite.play()
         }
+        sprite.name = spriteName
         sprite.anchor.x = sprite.anchor.y = 0.5
         sprite.blendMode = PIXI.BLEND_MODES.ADD
         return sprite

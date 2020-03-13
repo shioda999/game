@@ -1,4 +1,5 @@
 import {Obj} from './Obj'
+import {ENEMY_NAME} from './global'
 export class Enemy extends Obj{
     protected count = 0
     constructor(spriteName: string, x: number, y: number, is_enemy: boolean){
@@ -7,7 +8,7 @@ export class Enemy extends Obj{
 }
 export class Enemy_A extends Enemy{
     constructor(x: number, y: number, is_enemy: boolean){
-        super("player", x, y, is_enemy)
+        super(ENEMY_NAME[0], x, y, is_enemy)//enemy_A
     }
     public update(){
         this.count++

@@ -72,7 +72,7 @@ export class Obj{
     }
     public check_collision(obj: Obj){
         if(!this.muteki_flag
-             && Math.pow( this.x - obj.x, 2) + Math.pow( this.y - obj.y, 2) < Math.pow(this.range + obj.range, 2)){
+            && Math.pow( this.x - obj.x, 2) + Math.pow( this.y - obj.y, 2) < Math.pow(this.range + obj.range, 2)){
             this.Lp -= obj.Ap
             this.damageFlag = true
         }

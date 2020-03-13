@@ -1,14 +1,1 @@
-[
-	{
-		"name": "player",
-		"param": 100
-	},
-	{
-		"name": "player",
-		"param": 60
-	},
-	{
-		"name": "player",
-		"param": 10
-	}
-]
+[{"name":"sleep","param":160},{"name":"enemy_A","param":240},{"name":"sleep","param":40},{"name":"enemy_A","param":400},{"name":"sleep","param":40},{"name":"enemy_A","param":80},{"name":"enemy_A","param":560},{"name":"sleep","param":80},{"name":"enemy_A","param":240},{"name":"sleep","param":40},{"name":"enemy_A","param":400},{"name":"sleep","param":40},{"name":"enemy_A","param":120}]

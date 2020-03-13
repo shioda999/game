@@ -6,7 +6,6 @@ import {Player} from './Player'
 import {ObjManager} from './ObjManager'
 import {GraphicManager} from './GraphicManager'
 import {Sound} from './Sound'
-import { Stage } from "./Stage";
 const FPS_UPDATE_FREQ = 20
 export class Game extends Scene {
 	private curTime: number
@@ -26,7 +25,6 @@ export class Game extends Scene {
 			Sound.stop("bgm")
 		}
 		this.objmanager = new ObjManager(container)
-		new Stage()
 		const inst = GraphicManager.GetInstance()
 		inst.loadGraphic("player")
 		inst.loadGraphic("bullet")

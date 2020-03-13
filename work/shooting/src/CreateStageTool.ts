@@ -4,7 +4,7 @@ import {GraphicManager} from './GraphicManager'
 import {Scene} from './Scene'
 import {Screen} from './Screen'
 import { Key } from './key'
-const name = ["player", "player", "player", "player", "player", "player", "player", "player", "player", "waitLine"]
+import {ENEMY_NAME} from './global'
 const w = WIDTH / 9
 const p_w = WIDTH / 10
 const unit = 40
@@ -27,9 +27,7 @@ export class CreateStageTool extends Scene{
     private input: HTMLInputElement
     private reader: FileReader
     private saveFlag: boolean = true
-    //TODO setedSprite使って設置したスプライトの情報をまとめておき、
-    //そこからjsonデータを作ったりできるようにしておく。
-    //座標等の情報も表示されるようにしておきたい。
+    
     constructor(private container: PIXI.Container) {
         super()
         this.release = () => {
@@ -41,19 +39,7 @@ export class CreateStageTool extends Scene{
         this.key = Key.GetInstance()
         this.key.key_register({ code: ["ShiftLeft"], name: "shift" })
         this.key.key_register({ code: ["ControlLeft"], name: "ControlLeft" })
-        const inst = GraphicManager.GetInstance()
-        inst.loadGraphics(name)
-        inst.SetLoadedFunc(() => {
-            const inst = GraphicManager.GetInstance()
-            name.forEach(n => {
-                let sprite = inst.GetSprite(n)
-                sprite.scale.x = sprite.scale.y = Math.min(sprite.width / p_w, sprite.height / p_w)
-                this.enemy_list.push(sprite)
-            })
-            this.enemy_list.push(this.lineSprite)
-            Screen.init().AddOnresizeFunc(this.set)
-            this.set()
-        })
+
         this.fog = new PIXI.Graphics()
         this.fog.lineStyle(0, 0)
         this.fog.beginFill(0xFF0000, 0.5);
@@ -68,10 +54,10 @@ export class CreateStageTool extends Scene{
             -w / 8, -w / 4, -w / 4, -w / 8, -w / 8, 0,
             -w / 4, w / 8, -w / 8, w / 4, 0, w / 8,
         ];
-        this.batu.lineStyle(2, 0);
-        this.batu.beginFill(0xFF0000, 1);
-        this.batu.drawPolygon(path);
-        this.batu.endFill();
+        this.batu.lineStyle(2, 0)
+        this.batu.beginFill(0xFF0000, 1)
+        this.batu.drawPolygon(path)
+        this.batu.endFill()
         this.batu.zIndex = 4
 
         this.temp = new PIXI.Container()
@@ -96,6 +82,16 @@ export class CreateStageTool extends Scene{
 
         this.reader = new FileReader()
         this.reader.onload = this.readFile
+        
+        const inst = GraphicManager.GetInstance()
+        ENEMY_NAME.forEach(n => {
+            let sprite = inst.GetSprite(n)
+            sprite.scale.x = sprite.scale.y = Math.min(sprite.width / p_w, sprite.height / p_w)
+            this.enemy_list.push(sprite)
+        })
+        this.enemy_list.push(this.lineSprite)
+        Screen.init().AddOnresizeFunc(this.set)
+        this.set()
     }
     private set = () => {
         const app = Screen.init().app
@@ -107,11 +103,11 @@ export class CreateStageTool extends Scene{
         graph.lineStyle(2, 0xCCCC00, 1);
         graph.beginFill(0);
         let i: number
-        for(i = 0; i < name.length; i++){
+        for(i = 0; i < ENEMY_NAME.length; i++){
             this.enemy_list[i].x = list_x + (i % list_w_num) * w
             this.enemy_list[i].y = list_y + Math.floor(i / list_w_num) * w
             this.enemy_list[i].zIndex = 3
-            if (i !== name.indexOf("waitLine")) app.stage.addChild(this.enemy_list[i])
+            if (i !== ENEMY_NAME.indexOf("waitLine")) app.stage.addChild(this.enemy_list[i])
             else {
                 const str = new PIXI.Text("wait", new PIXI.TextStyle({
                     fontSize: p_w / 3,
@@ -147,7 +143,7 @@ export class CreateStageTool extends Scene{
         const b = Math.floor((mouse.y - list_y + w / 2) / w) * list_w_num
         if(0 <= a && a <= list_w_num){
             const id = a + b
-            if(id < name.length){
+            if(id < ENEMY_NAME.length){
                 this.selectingID = id
                 this.fog.x = this.enemy_list[id].x,
                 this.fog.y = this.enemy_list[id].y,
@@ -163,7 +159,7 @@ export class CreateStageTool extends Scene{
         if(x < 0 || x > WIDTH)return
         x = this.arrangePos(x)
         y = this.arrangePos(y)
-        if(this.selectingID == name.indexOf("waitLine"))x = WIDTH / 2
+        if(this.selectingID == ENEMY_NAME.indexOf("waitLine"))x = WIDTH / 2
         let pos = x + y * WIDTH
         let i = this.pos.indexOf(pos)
         if (i !== -1) {
@@ -172,7 +168,7 @@ export class CreateStageTool extends Scene{
         }
         if(!this.key.IsPress_Now("shift"))return
         if (this.selectingID < 0) return
-        this.setSprite(name[this.selectingID], pos)
+        this.setSprite(ENEMY_NAME[this.selectingID], pos)
     }
     private setSprite(name: string, pos: number) {
         this.pos.push(this._pos = pos)
@@ -402,7 +398,7 @@ export class CreateStageTool extends Scene{
     }
     private output() {
         let name = prompt("ファイル名を入力してください", "stage.json");
-        if(name === "null")return
+        if(name === null)return
         let data = [], y: number = HEIGHT
         let len = this.settedSprite.length
         this.settedSprite.sort((a, b) => b.y - a.y)

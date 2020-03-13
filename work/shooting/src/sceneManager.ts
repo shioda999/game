@@ -6,6 +6,7 @@ import {SceneType, Scene} from './Scene'
 import {Fade} from './Fade'
 import {GraphicManager} from './GraphicManager'
 import { CreateStageTool } from "./CreateStageTool"
+import {ENEMY_NAME} from './global'
 export class SceneManager{
     private key: Key
     private static instance: SceneManager
@@ -13,6 +14,8 @@ export class SceneManager{
     private scene
     private constructor(private container: PIXI.Container){
         Scene.SetGotoSceneFunction((v) => this.gotoScene(v))
+        const inst = GraphicManager.GetInstance()
+        inst.loadGraphics(ENEMY_NAME)
 
         this.key = Key.GetInstance()
         this.key.key_register({code: ["KeyR"], name: "r"})

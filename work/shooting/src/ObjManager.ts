@@ -72,7 +72,7 @@ export class ObjManager{
         if(data == undefined)return
         if(data === "end")return
         data.forEach(n => {
-            this.CreateObj(n.name, n.param1, n.param2, true)
+            this.CreateObj(n.name, n.param, -32, true)
         })
     }
 }

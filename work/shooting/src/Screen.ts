@@ -21,17 +21,18 @@ export class Screen {
     public getContainer(){
         return this.container
     }
-    private setPosition = ()=> {
-        if(this.app){
-            document.body.removeChild(this.app.view)
-            this.app.stage.removeChildren()
-            this.app.destroy()
-        }
+    private setPosition = () => {
+        let temp = this.app
         this.app = new PIXI.Application({ backgroundColor: 0 ,
-             width: document.documentElement.clientWidth,
+            width: document.documentElement.clientWidth,
             height: document.documentElement.clientHeight - 10,
             antialias: true
         })
+        if(temp){
+            document.body.removeChild(temp.view)
+            temp.stage.removeChildren()
+            temp.destroy()
+        }
         document.body.appendChild(this.app.view)
         this.app.stage.width = document.documentElement.clientWidth
         this.app.stage.height = document.documentElement.clientHeight

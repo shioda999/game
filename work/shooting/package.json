@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "pixi.js": "^5.2.1"
+    "@types/pixi.js": "^5.0.0"
   },
   "devDependencies": {
     "ts-loader": "^6.2.1",

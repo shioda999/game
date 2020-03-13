@@ -23,21 +23,25 @@ export class CreateStageTool extends Scene{
     private clickFlag: boolean = false
     private settedSprite: PIXI.Sprite[] = []
     private lineSprite: PIXI.Sprite
+    private infoText: PIXI.Text
+    private input: HTMLInputElement
+    private reader: FileReader
+    private saveFlag: boolean = true
     //TODO setedSprite使って設置したスプライトの情報をまとめておき、
     //そこからjsonデータを作ったりできるようにしておく。
     //座標等の情報も表示されるようにしておきたい。
-    constructor(private container: PIXI.Container){
+    constructor(private container: PIXI.Container) {
         super()
         this.release = () => {
             const screen = Screen.init()
             screen.DeleteOnresizeFunc(this.set)
             screen.app.stage.off("pointerdown", () => this.clickList())
-            this.lineSprite.destroy({texture: true})
+            this.lineSprite.destroy({ texture: true })
         }
         this.key = Key.GetInstance()
-        this.key.key_register({code: ["ShiftLeft"], name:"shift"})
+        this.key.key_register({ code: ["ShiftLeft"], name: "shift" })
         this.key.key_register({ code: ["ControlLeft"], name: "ControlLeft" })
-		const inst = GraphicManager.GetInstance()
+        const inst = GraphicManager.GetInstance()
         inst.loadGraphics(name)
         inst.SetLoadedFunc(() => {
             const inst = GraphicManager.GetInstance()
@@ -51,7 +55,7 @@ export class CreateStageTool extends Scene{
             this.set()
         })
         this.fog = new PIXI.Graphics()
-        this.fog.lineStyle(0,0)
+        this.fog.lineStyle(0, 0)
         this.fog.beginFill(0xFF0000, 0.5);
         this.fog.drawRect(-w / 2, -w / 2, w, w)
         this.fog.endFill()
@@ -59,10 +63,10 @@ export class CreateStageTool extends Scene{
 
         this.batu = new PIXI.Graphics()
         const path = [
-            w/8, w/4, w/4, w/8, w/8, 0,
-            w/4, -w/8, w/8, -w/4, 0, -w/8,
-            -w/8, -w/4, -w/4, -w/8, -w/8, 0,
-            -w/4, w/8, -w/8, w/4, 0, w/8,
+            w / 8, w / 4, w / 4, w / 8, w / 8, 0,
+            w / 4, -w / 8, w / 8, -w / 4, 0, -w / 8,
+            -w / 8, -w / 4, -w / 4, -w / 8, -w / 8, 0,
+            -w / 4, w / 8, -w / 8, w / 4, 0, w / 8,
         ];
         this.batu.lineStyle(2, 0);
         this.batu.beginFill(0xFF0000, 1);
@@ -72,18 +76,26 @@ export class CreateStageTool extends Scene{
 
         this.temp = new PIXI.Container()
         const graph = new PIXI.Graphics()
-        graph.lineStyle(0,0)
+        graph.lineStyle(0, 0)
         graph.beginFill(0);
         graph.drawRect(0, 0, WIDTH, HEIGHT)
         graph.endFill()
         graph.zIndex = -1
         graph.interactive = true
         graph.on("pointerdown", () => (this.clickScreen(), this.clickFlag = true))
-            .on("pointermove", () => this.clickFlag && this.clickScreen())
+            .on("pointermove", () => (this.drawInfomationText(), this.clickFlag && this.clickScreen()))
             .on("pointerup", () => (this.clickFlag = false))
             .on("pointerupoutside", () => (this.clickFlag = false))
         this.container.addChild(graph)
         this.container.addChild(this.temp)
+
+        this.input = document.createElement("input")
+        this.input.type = "file"
+        this.input.hidden = true
+        this.input.onchange = this.loadFile
+
+        this.reader = new FileReader()
+        this.reader.onload = this.readFile
     }
     private set = () => {
         const app = Screen.init().app
@@ -121,7 +133,8 @@ export class CreateStageTool extends Scene{
         graph.endFill()
         app.stage.addChild(graph)
         this.setTriangle()
-        this.setOutputButton()
+        this.setSaveButton()
+        this.drawInfomationText()
     }
     private clickList(){
         const app = Screen.init().app
@@ -158,17 +171,26 @@ export class CreateStageTool extends Scene{
             return
         }
         if(!this.key.IsPress_Now("shift"))return
-        if(this.selectingID < 0)return
+        if (this.selectingID < 0) return
+        this.setSprite(name[this.selectingID], pos)
+    }
+    private setSprite(name: string, pos: number) {
         this.pos.push(this._pos = pos)
-        const sprite = GraphicManager.GetInstance().GetSprite(name[this.selectingID])
+        const sprite = GraphicManager.GetInstance().GetSprite(name)
+        if (!sprite) {
+            console.log("error:" + name)
+            return
+        }
         this.settedSprite.push(sprite)
-        sprite.x = x, sprite.y = y
+        sprite.y = Math.floor(pos / WIDTH)
+        sprite.x = pos - sprite.y * WIDTH
         sprite.interactive = true
         sprite.on("pointerdown", (e) => this.spriteDragStart(sprite))
         .on('pointerup', () => this.spriteDragEnd(sprite))
         .on('pointerupoutside', () => this.spriteDragEnd(sprite))
         .on('pointermove', () => this.spriteDragging(sprite));
         this.temp.addChild(sprite)
+        this.saveFlag = false
     }
     private deleteSprite(pos: number) {
         let len = this.settedSprite.length
@@ -178,6 +200,7 @@ export class CreateStageTool extends Scene{
                 this.settedSprite[i2].destroy()
                 this.settedSprite.splice(i2, 1)
                 this.pos = this.pos.filter(n => n !== pos)
+                this.saveFlag = false
                 break
             }
         }
@@ -198,6 +221,7 @@ export class CreateStageTool extends Scene{
         sprite.y = this.arrangePos(sprite.y)
         if(sprite.name === "waitLine")sprite.x = WIDTH / 2
         let pos = sprite.x + sprite.y * WIDTH
+        if(pos !== this._pos)this.saveFlag = false
         if(sprite.alpha !== 0.5)return
         let i = this.pos.indexOf(pos)
         if (i !== -1) {
@@ -281,11 +305,15 @@ export class CreateStageTool extends Scene{
     private arrangePos(num: number){
         return Math.floor((num + unit / 2) / unit) * unit
     }
-    private setOutputButton() {
+    private setSaveButton() {
+        const b_w = w * 2, b_h = w
+        this.createButton("読込", HEIGHT + this.container.y - b_h * 2.3, b_w, b_h, () => this.load())
+        this.createButton("保存", HEIGHT + this.container.y - b_h, b_w, b_h, () => this.output())
+    }
+    private createButton(str: string, y: number, b_w: number, b_h: number, func: () => any) {
         const button = new PIXI.Graphics()
-        const b_w = w, b_h = w / 3
-        button.x = (this.container.x - b_w) / 3
-        button.y = this.container.y
+        button.x = (this.container.x - b_w) / 2
+        button.y = y
         button.beginFill(0xffffff)
         button.drawRect(0, 0, b_w, b_h)
         button.endFill()
@@ -294,9 +322,9 @@ export class CreateStageTool extends Scene{
         button.lineTo(b_w, b_h)
         button.lineTo(b_w, 1)
 
-        const buttonText = new PIXI.Text("出力", {
+        const buttonText = new PIXI.Text(str, {
             fontFamily: 'Arial',
-            fontSize: w / 6,
+            fontSize: b_h / 3,
             fill: 0
         })
         buttonText.anchor.set(0.5)
@@ -304,11 +332,77 @@ export class CreateStageTool extends Scene{
         buttonText.y = b_h / 2
         button.addChild(buttonText)
         button.interactive = true
-        button.on("pointerdown", () => this.output())
+        button.on("pointerdown", () => button.alpha = 0.5)
+            .on("pointerupoutside", () => button.alpha = 1.0)
+            .on("pointerup", () => (func(), button.alpha = 1.0))
         button.zIndex = 3
         Screen.init().app.stage.addChild(button)
     }
+    private drawInfomationText() {
+        const app = Screen.init().app
+        const mouse = app.renderer.plugins.interaction.mouse.global
+        let x = mouse.x - this.container.x - this.temp.x
+        let y = mouse.y - this.container.y - this.temp.y
+        x = Math.min(WIDTH, Math.max(0, x))
+        x = this.arrangePos(x)
+        y = this.arrangePos(HEIGHT - y)
+        let max_y = 0
+        this.pos.forEach(n => max_y = Math.max(max_y, HEIGHT - Math.floor(n / WIDTH)))
+        const str = "X    : " + x + "\nY    : " + y + "\nMaxY : " + max_y + "\nDiff : " + (y - max_y)
+        const text = new PIXI.Text(str, {
+            fontFamily: 'Arial',
+            fontSize: w / 3,
+            fill: 0
+        })
+        text.x = (this.container.x - w * 2) / 2
+        text.y = this.container.y
+        text.zIndex = 3
+        app.stage.addChild(text)
+        app.stage.removeChild(this.infoText)
+        this.infoText = text
+    }
+    private loadFile = (ev) => {
+        var target = ev.target
+        var file = target.files[0]
+        var type = file.type
+        var size = file.size
+        this.input.value = ''
+        if ( type !== 'application/json' ) {
+            alert('選択できるファイルはJSONファイルだけです。')
+            return
+        }
+        this.reader.readAsText(file)
+    }
+    private readFile = () => {
+        if (typeof (this.reader.result) !== "string") return
+        let data = JSON.parse(this.reader.result)
+        let len: number = data.length
+        let y: number = HEIGHT
+        this.temp.removeChildren()
+        this.settedSprite.forEach(n => n.destroy())
+        this.settedSprite = []
+        this.pos = []
+        for (let i = 0; i < len; i++){
+            let name: string = data[i].name
+            if (name === "sleep") {
+                y -= data[i].param
+            }
+            else {
+                this.setSprite(name, y * WIDTH + data[i].param)
+            }
+        }
+        this.saveFlag = true
+    }
+    private load() {
+        if (!this.saveFlag) {
+            let result = confirm("未保存の場合データが破棄されますがよろしいですか？")
+            if(!result)return
+        }
+        this.input.click()
+    }
     private output() {
+        let name = prompt("ファイル名を入力してください", "stage.json");
+        if(name === "null")return
         let data = [], y: number = HEIGHT
         let len = this.settedSprite.length
         this.settedSprite.sort((a, b) => b.y - a.y)
@@ -319,7 +413,12 @@ export class CreateStageTool extends Scene{
             }
             data.push({name: this.settedSprite[i].name, param: this.settedSprite[i].x})
         }
-        let json = JSON.stringify(data)
-        alert(json)
+        let blob = new Blob([JSON.stringify(data)], { type: 'application/json' })
+        let anchor = document.createElement("a")
+        anchor.hidden = true
+        anchor.href = window.URL.createObjectURL(blob)
+        anchor.download = name
+        anchor.click()
+        this.saveFlag = true
     }
 }

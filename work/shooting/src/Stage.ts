@@ -12,7 +12,7 @@ export class Stage {
         xhr.open('GET', "asset/stage/stage.json", true);
         xhr.onreadystatechange = () => {
             if(xhr.readyState === 4 && xhr.status === 200){
-                Stage.data = JSON.parse(xhr.responseText).stage
+                Stage.data = JSON.parse(xhr.responseText)
             }
         }
         setTimeout(() => xhr.send(null), 100)

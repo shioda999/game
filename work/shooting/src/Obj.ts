@@ -129,7 +129,7 @@ export class Obj{
             }
         }
     }
-    public check_collision_beam(x: number, y: number, angle: number, thick: number) {
+    /*public check_collision_beam(x: number, y: number, angle: number, thick: number) {
         if(!this.muteki_flag
             && Math.pow( this.x - obj.x, 2) + Math.pow( this.y - obj.y, 2) < Math.pow(this.range + obj.range, 2)){
             this.Lp -= obj.Ap
@@ -140,7 +140,7 @@ export class Obj{
                 this.createDamageEffect()
             }
         }
-    }
+    }*/
     public itemobj_collision(obj: Obj) {
         if(Math.pow( this.x - obj.x, 2) + Math.pow( this.y - obj.y, 2) < Math.pow(this.range + obj.range, 2)){
             if(obj.collision_callback)obj.collision_callback()

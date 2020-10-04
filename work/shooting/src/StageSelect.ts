@@ -1,3 +1,4 @@
+import * as PIXI from "pixi.js"
 import {Scene} from './Scene';
 import {WIDTH, HEIGHT, GlobalParam} from './global'
 import {Key} from './key'

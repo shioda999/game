@@ -1,8 +1,5 @@
 import * as PIXI from "pixi.js"
 import {WIDTH, HEIGHT, ENEMY_DATA, GlobalParam} from './global'
-import {GraphicManager} from './GraphicManager'
-import {Key} from './key'
-import { Sound } from "./Sound"
 import { Obj } from "./Obj"
 const length = Math.pow(WIDTH * WIDTH + HEIGHT * HEIGHT, 0.5)
 export class Beam{

@@ -42,7 +42,7 @@ export class Title extends Scene {
 			strokeThickness: 17,
 			textBaseline: "middle"
 		});
-		this.text = new PIXI.Text("Shooting", style)
+		this.text = new PIXI.Text("SShooting", style)
 		this.text.position.set(WIDTH / 2, HEIGHT / 4.5)
 		this.text.anchor.set(0.5, 0.5)
 		container.addChild(this.text)

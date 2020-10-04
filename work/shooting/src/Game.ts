@@ -1,13 +1,19 @@
 import * as PIXI from "pixi.js"
 import {Scene} from './Scene';
-import {WIDTH, HEIGHT} from './global'
+import {WIDTH, HEIGHT, GlobalParam} from './global'
 import {Key} from './key'
 import {Player} from './Player'
 import {ObjManager} from './ObjManager'
 import {GraphicManager} from './GraphicManager'
-import {Sound} from './Sound'
+import { Sound } from './Sound'
+import { StageClear } from './StageClear'
+import { ItemObj } from './ItemObj'
+import { ScoreBoard } from './ScoreBoard'
+import { GameOver } from "./GameOver";
+import { BackGround } from "./BackGround";
 const FPS_UPDATE_FREQ = 20
 export class Game extends Scene {
+	private stage: number = 1
 	private curTime: number
 	private prevTime: number
 	private countFrame: number = 0
@@ -17,6 +23,9 @@ export class Game extends Scene {
 	private fpsBox: PIXI.Graphics
 	private releaseFlag: boolean = false
 	private objmanager: ObjManager
+	private score: number = 0
+	private time: number = 0
+	private background: BackGround
     constructor(private container: PIXI.Container) {
 		super()
 		this.release = () => {
@@ -24,11 +33,9 @@ export class Game extends Scene {
 			this.releaseFlag = true
 			Sound.stop("bgm")
 		}
+		this.background = new BackGround(container, this.stage)
 		this.objmanager = new ObjManager(container)
 		const inst = GraphicManager.GetInstance()
-		inst.loadGraphic("player")
-		inst.loadGraphic("bullet")
-		inst.loadGraphic("pbullet")
 		inst.SetLoadedFunc(() => {
 			this.objmanager.setPlayer()
 			this.key = Key.GetInstance()
@@ -36,15 +43,37 @@ export class Game extends Scene {
 			this.initFpsContainer()
 			this.loop()
 		})
-		Sound.load("test.mp3", "bgm")
-		Sound.load("player_shot.mp3", "pshot")
-		Sound.set_volume("pshot", 0.15)
-		Sound.play("bgm", true)
+		ItemObj.setCollisionFunc(this.AddScore)
+		Sound.play("bgm", true, GlobalParam.bgm_volume)
 	}
-	private loop = ()=> {
+	private loop = () => {
 		if(this.releaseFlag)return
+		if (this.objmanager.is_clear() || this.key.IsPress("r")) {
+			new StageClear(this.container, () => {
+				GlobalParam.data = {score: this.score, remain_life: this.getPlayerLp(), time: this.time}
+				this.exitCurrentScene()
+				this.gotoScene("scoreBoard")
+			})
+			return
+		}
+		if (this.objmanager.is_gameover()) {
+			new GameOver(this.container, () => {
+				Sound.stop("all")
+				Sound.play("bgm", true, GlobalParam.bgm_volume)
+				this.objmanager.continue()
+				this.score = 0
+				this.loop()
+			}, () => {
+				GlobalParam.data = {score: this.score, remain_life: this.getPlayerLp(), time: this.time}
+				this.exitCurrentScene()
+				this.gotoScene("scoreBoard")
+			})
+			return
+		}
 		requestAnimationFrame(this.loop)
-        this.key.RenewKeyData()
+		if (GlobalParam.pause_flag) return
+		this.key.RenewKeyData()
+		this.background.update()
 		this.objmanager.update()
 		this.objmanager.draw()
 		if(this.countFrame % FPS_UPDATE_FREQ === 0){
@@ -53,7 +82,14 @@ export class Game extends Scene {
 			this.updateFPS(this.curTime - this.prevTime)
 		}
 		this.countFrame++
-		if(this.key.IsPress("cancel"))this.gotoScene("back")
+		this.time++
+		if (this.key.IsPress("cancel")) {
+			Sound.play("cancel", false, GlobalParam.se_volume)
+			this.gotoScene("back")
+		}
+	}
+	private AddScore = (score: number) => {
+		this.score += score
 	}
 	private orgRound(value, base) {
 		return Math.round(value * base) / base;
@@ -80,5 +116,8 @@ export class Game extends Scene {
 		this.fpsContainer = new PIXI.Container()
 		this.fpsContainer.zIndex = 1
 		this.container.addChild(this.fpsContainer)
+	}
+	private getPlayerLp(): number {
+		return this.objmanager.getPlayerLp()
 	}
 }

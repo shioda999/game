@@ -1,42 +1,47 @@
+import sound from 'pixi-sound'
 export class Sound {
-    private static data: HTMLAudioElement[] = []
-    private static name_list: string[] = []
-    public static load(fileName: string, name: string){
-        const index = this.name_list.indexOf(name)
+    private static data: sound.Sound[] = []
+    private static id_list: string[] = []
+    public static load(fileName: string, id: string){
+        const index = this.id_list.indexOf(id)
         if(index !== -1){
             return
         }
-        const inst = new Audio('asset/' + fileName)
-        inst.volume = 0.5
-        this.data.push(inst)
-        this.name_list.push(name)
+        fileName = "asset/" + fileName
+        this.data.push(sound.Sound.from({url: fileName, preload:true}))
+        this.id_list.push(id)
     }
-    public static play(name: string, loop = false){
-        const index = this.name_list.indexOf(name)
+    public static play(id: string, loop = false, volume){
+        const index = this.id_list.indexOf(id)
         if(index === -1)return
-        const inst = this.data[this.name_list.indexOf(name)]
-        inst.currentTime = 0
-        inst.play()
-        if(loop){
-            inst.addEventListener("ended", function() {
-                inst.play();
-              }, false);
+        const inst: any = this.data[this.id_list.indexOf(id)]
+        inst.volume = volume
+        if (loop) {
+            inst.play().on('end', () => {
+                Sound.play(id, loop, volume)
+            })
         }
+        else inst.play()
     }
-    public static pause(name: string){
-        const index = this.name_list.indexOf(name)
+    public static pause(id: string){
+        const index = this.id_list.indexOf(name)
         if(index === -1)return
-        this.data[this.name_list.indexOf(name)].pause()
+        this.data[this.id_list.indexOf(id)].pause()
     }
-    public static stop(name: string){
-        const index = this.name_list.indexOf(name)
+    public static stop(id: string){
+        const index = this.id_list.indexOf(id)
+        if(id === "all"){
+            this.data.forEach(n => n.pause())
+        }
         if(index === -1)return
-        this.data[this.name_list.indexOf(name)].pause()
-        this.data[this.name_list.indexOf(name)].currentTime = 0
+        this.data[this.id_list.indexOf(id)].pause()
     }
-    public static set_volume(name: string, volume: number){
-        const index = this.name_list.indexOf(name)
+    public static set_volume(id: string, volume: number){
+        const index = this.id_list.indexOf(id)
         if(index === -1)return
-        this.data[this.name_list.indexOf(name)].volume = volume
+        this.data[this.id_list.indexOf(id)].volume = volume
+    }
+    public static set_master_volume(volume: number) {
+        sound.volumeAll = volume
     }
 }

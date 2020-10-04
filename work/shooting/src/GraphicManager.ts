@@ -26,7 +26,7 @@ export class GraphicManager{
     private load(){
         if(this.loader.loading)return
         const spriteName = this.preloadList.pop()
-        const jsonFileName = 'asset/' + spriteName + '_sprite.json'
+        const jsonFileName = 'asset/graphic/' + spriteName + '_sprite.json'
         this.loadingList.push(spriteName)
         this.loader.add(jsonFileName).load(()=>{
             let texture: PIXI.Texture
@@ -59,7 +59,8 @@ export class GraphicManager{
     }
     public GetSprite(spriteName: string, index?: number[]){
         const i = this.loadedList.indexOf(spriteName)
-        if(i === -1){
+        if (i === -1) {
+            console.log(spriteName + " did not load.")
             return undefined
         }
         let sprite: PIXI.AnimatedSprite
@@ -73,7 +74,6 @@ export class GraphicManager{
         }
         sprite.name = spriteName
         sprite.anchor.x = sprite.anchor.y = 0.5
-        sprite.blendMode = PIXI.BLEND_MODES.ADD
         return sprite
     }
     private is_loading(){

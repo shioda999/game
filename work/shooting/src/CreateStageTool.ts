@@ -4,7 +4,7 @@ import {GraphicManager} from './GraphicManager'
 import {Scene} from './Scene'
 import {Screen} from './Screen'
 import { Key } from './key'
-import {ENEMY_NAME} from './global'
+import {ENEMY_DATA} from './global'
 const w = WIDTH / 9
 const p_w = WIDTH / 10
 const unit = 40
@@ -22,76 +22,82 @@ export class CreateStageTool extends Scene{
     private _pos: number
     private clickFlag: boolean = false
     private settedSprite: PIXI.Sprite[] = []
-    private lineSprite: PIXI.Sprite
     private infoText: PIXI.Text
     private input: HTMLInputElement
     private reader: FileReader
     private saveFlag: boolean = true
+    private waitline_id: number
+    private releaseFlag = false
     
     constructor(private container: PIXI.Container) {
         super()
+        const inst = GraphicManager.GetInstance()
         this.release = () => {
+            this.releaseFlag = true
             const screen = Screen.init()
             screen.DeleteOnresizeFunc(this.set)
             screen.app.stage.off("pointerdown", () => this.clickList())
-            this.lineSprite.destroy({ texture: true })
+            const frame = screen.app.stage.getChildByName("frame")
+            screen.app.stage.removeChildren()
+            screen.app.stage.addChild(this.container)
+            screen.app.stage.addChild(frame)
         }
-        this.key = Key.GetInstance()
-        this.key.key_register({ code: ["ShiftLeft"], name: "shift" })
-        this.key.key_register({ code: ["ControlLeft"], name: "ControlLeft" })
+        inst.SetLoadedFunc(() => {
+            this.key = Key.GetInstance()
+            this.key.key_register({ code: ["ShiftLeft"], name: "shift" })
+            this.key.key_register({ code: ["ControlLeft"], name: "ControlLeft" })
 
-        this.fog = new PIXI.Graphics()
-        this.fog.lineStyle(0, 0)
-        this.fog.beginFill(0xFF0000, 0.5);
-        this.fog.drawRect(-w / 2, -w / 2, w, w)
-        this.fog.endFill()
-        this.fog.zIndex = 4
+            this.fog = new PIXI.Graphics()
+            this.fog.lineStyle(0, 0)
+            this.fog.beginFill(0xFF0000, 0.5);
+            this.fog.drawRect(-w / 2, -w / 2, w, w)
+            this.fog.endFill()
+            this.fog.zIndex = 4
 
-        this.batu = new PIXI.Graphics()
-        const path = [
-            w / 8, w / 4, w / 4, w / 8, w / 8, 0,
-            w / 4, -w / 8, w / 8, -w / 4, 0, -w / 8,
-            -w / 8, -w / 4, -w / 4, -w / 8, -w / 8, 0,
-            -w / 4, w / 8, -w / 8, w / 4, 0, w / 8,
-        ];
-        this.batu.lineStyle(2, 0)
-        this.batu.beginFill(0xFF0000, 1)
-        this.batu.drawPolygon(path)
-        this.batu.endFill()
-        this.batu.zIndex = 4
+            this.batu = new PIXI.Graphics()
+            const path = [
+                w / 8, w / 4, w / 4, w / 8, w / 8, 0,
+                w / 4, -w / 8, w / 8, -w / 4, 0, -w / 8,
+                -w / 8, -w / 4, -w / 4, -w / 8, -w / 8, 0,
+                -w / 4, w / 8, -w / 8, w / 4, 0, w / 8,
+            ];
+            this.batu.lineStyle(2, 0)
+            this.batu.beginFill(0xFF0000, 1)
+            this.batu.drawPolygon(path)
+            this.batu.endFill()
+            this.batu.zIndex = 4
 
-        this.temp = new PIXI.Container()
-        const graph = new PIXI.Graphics()
-        graph.lineStyle(0, 0)
-        graph.beginFill(0);
-        graph.drawRect(0, 0, WIDTH, HEIGHT)
-        graph.endFill()
-        graph.zIndex = -1
-        graph.interactive = true
-        graph.on("pointerdown", () => (this.clickScreen(), this.clickFlag = true))
-            .on("pointermove", () => (this.drawInfomationText(), this.clickFlag && this.clickScreen()))
-            .on("pointerup", () => (this.clickFlag = false))
-            .on("pointerupoutside", () => (this.clickFlag = false))
-        this.container.addChild(graph)
-        this.container.addChild(this.temp)
+            this.temp = new PIXI.Container()
+            const graph = new PIXI.Graphics()
+            graph.lineStyle(0, 0)
+            graph.beginFill(0);
+            graph.drawRect(0, 0, WIDTH, HEIGHT)
+            graph.endFill()
+            graph.zIndex = -1
+            graph.interactive = true
+            graph.on("pointerdown", () => (this.clickScreen(), this.clickFlag = true))
+                .on("pointermove", () => (this.drawInfomationText(), this.clickFlag && this.clickScreen()))
+                .on("pointerup", () => (this.clickFlag = false))
+                .on("pointerupoutside", () => (this.clickFlag = false))
+            this.container.addChild(graph)
+            this.container.addChild(this.temp)
 
-        this.input = document.createElement("input")
-        this.input.type = "file"
-        this.input.hidden = true
-        this.input.onchange = this.loadFile
+            this.input = document.createElement("input")
+            this.input.type = "file"
+            this.input.hidden = true
+            this.input.onchange = this.loadFile
 
-        this.reader = new FileReader()
-        this.reader.onload = this.readFile
+            this.reader = new FileReader()
+            this.reader.onload = this.readFile
         
-        const inst = GraphicManager.GetInstance()
-        ENEMY_NAME.forEach(n => {
-            let sprite = inst.GetSprite(n)
-            sprite.scale.x = sprite.scale.y = Math.min(sprite.width / p_w, sprite.height / p_w)
-            this.enemy_list.push(sprite)
+            ENEMY_DATA.forEach(n => {
+                let sprite = inst.GetSprite(n.name)
+                sprite.scale.x = sprite.scale.y = Math.min(p_w / sprite.width, p_w / sprite.height)
+                this.enemy_list.push(sprite)
+            })
+            Screen.init().AddOnresizeFunc(this.set)
+            this.set()
         })
-        this.enemy_list.push(this.lineSprite)
-        Screen.init().AddOnresizeFunc(this.set)
-        this.set()
     }
     private set = () => {
         const app = Screen.init().app
@@ -103,11 +109,14 @@ export class CreateStageTool extends Scene{
         graph.lineStyle(2, 0xCCCC00, 1);
         graph.beginFill(0);
         let i: number
-        for(i = 0; i < ENEMY_NAME.length; i++){
+        ENEMY_DATA.forEach((n, id) => {
+            if(n.name == "waitLine")this.waitline_id = id
+        })
+        for(i = 0; i < ENEMY_DATA.length; i++){
             this.enemy_list[i].x = list_x + (i % list_w_num) * w
             this.enemy_list[i].y = list_y + Math.floor(i / list_w_num) * w
             this.enemy_list[i].zIndex = 3
-            if (i !== ENEMY_NAME.indexOf("waitLine")) app.stage.addChild(this.enemy_list[i])
+            if (i !== this.waitline_id) app.stage.addChild(this.enemy_list[i])
             else {
                 const str = new PIXI.Text("wait", new PIXI.TextStyle({
                     fontSize: p_w / 3,
@@ -132,7 +141,8 @@ export class CreateStageTool extends Scene{
         this.setSaveButton()
         this.drawInfomationText()
     }
-    private clickList(){
+    private clickList() {
+        if(this.releaseFlag)return
         const app = Screen.init().app
         const mouse = app.renderer.plugins.interaction.mouse.global
         const list_x = this.container.x + WIDTH + w * 2 / 3
@@ -143,7 +153,7 @@ export class CreateStageTool extends Scene{
         const b = Math.floor((mouse.y - list_y + w / 2) / w) * list_w_num
         if(0 <= a && a <= list_w_num){
             const id = a + b
-            if(id < ENEMY_NAME.length){
+            if(id < ENEMY_DATA.length){
                 this.selectingID = id
                 this.fog.x = this.enemy_list[id].x,
                 this.fog.y = this.enemy_list[id].y,
@@ -159,8 +169,8 @@ export class CreateStageTool extends Scene{
         if(x < 0 || x > WIDTH)return
         x = this.arrangePos(x)
         y = this.arrangePos(y)
-        if(this.selectingID == ENEMY_NAME.indexOf("waitLine"))x = WIDTH / 2
-        let pos = x + y * WIDTH
+        if(this.selectingID == this.waitline_id)x = WIDTH / 2
+        let pos = x + y * (WIDTH + unit)
         let i = this.pos.indexOf(pos)
         if (i !== -1) {
             if (this.key.IsPress_Now("ControlLeft"))this.deleteSprite(pos)
@@ -168,7 +178,7 @@ export class CreateStageTool extends Scene{
         }
         if(!this.key.IsPress_Now("shift"))return
         if (this.selectingID < 0) return
-        this.setSprite(ENEMY_NAME[this.selectingID], pos)
+        this.setSprite(ENEMY_DATA[this.selectingID].name, pos)
     }
     private setSprite(name: string, pos: number) {
         this.pos.push(this._pos = pos)
@@ -178,8 +188,8 @@ export class CreateStageTool extends Scene{
             return
         }
         this.settedSprite.push(sprite)
-        sprite.y = Math.floor(pos / WIDTH)
-        sprite.x = pos - sprite.y * WIDTH
+        sprite.y = Math.floor(pos / (WIDTH + unit))
+        sprite.x = pos - sprite.y * (WIDTH + unit)
         sprite.interactive = true
         sprite.on("pointerdown", (e) => this.spriteDragStart(sprite))
         .on('pointerup', () => this.spriteDragEnd(sprite))
@@ -191,7 +201,7 @@ export class CreateStageTool extends Scene{
     private deleteSprite(pos: number) {
         let len = this.settedSprite.length
         for (let i2 = 0; i2 < len; i2++){
-            if (this.settedSprite[i2].x + this.settedSprite[i2].y * WIDTH === pos) {
+            if (this.settedSprite[i2].x + this.settedSprite[i2].y * (WIDTH + unit) === pos) {
                 this.temp.removeChild(this.settedSprite[i2])
                 this.settedSprite[i2].destroy()
                 this.settedSprite.splice(i2, 1)
@@ -203,7 +213,7 @@ export class CreateStageTool extends Scene{
     }
     private spriteDragStart(sprite: PIXI.Sprite){
         sprite.alpha = 0.5
-        this._pos = sprite.x + sprite.y * WIDTH
+        this._pos = sprite.x + sprite.y * (WIDTH + unit)
         if (this.key.IsPress_Now("ControlLeft"))this.deleteSprite(this._pos)
         else this.pos = this.pos.filter(n => n !== this._pos)
     }
@@ -216,7 +226,7 @@ export class CreateStageTool extends Scene{
         sprite.x = this.arrangePos(sprite.x)
         sprite.y = this.arrangePos(sprite.y)
         if(sprite.name === "waitLine")sprite.x = WIDTH / 2
-        let pos = sprite.x + sprite.y * WIDTH
+        let pos = sprite.x + sprite.y * (WIDTH + unit)
         if(pos !== this._pos)this.saveFlag = false
         if(sprite.alpha !== 0.5)return
         let i = this.pos.indexOf(pos)
@@ -231,11 +241,11 @@ export class CreateStageTool extends Scene{
     private spriteDragEnd(sprite: PIXI.Sprite){
         if(sprite.alpha !== 0.5)return
         sprite.alpha = 1.0
-        let pos = sprite.x + sprite.y * WIDTH
+        let pos = sprite.x + sprite.y * (WIDTH + unit)
         let i = this.pos.indexOf(pos)
         if(i !== -1){
-            sprite.y = Math.floor(this._pos / WIDTH)
-            sprite.x = this._pos - sprite.y * WIDTH
+            sprite.y = Math.floor(this._pos / (WIDTH + unit))
+            sprite.x = this._pos - sprite.y * (WIDTH + unit)
             pos = this._pos
             this.temp.removeChild(this.batu)
         }
@@ -305,6 +315,7 @@ export class CreateStageTool extends Scene{
         const b_w = w * 2, b_h = w
         this.createButton("読込", HEIGHT + this.container.y - b_h * 2.3, b_w, b_h, () => this.load())
         this.createButton("保存", HEIGHT + this.container.y - b_h, b_w, b_h, () => this.output())
+        this.createButton("戻る", HEIGHT + this.container.y - b_h * 3.6, b_w, b_h, () => this.gotoScene("back"))
     }
     private createButton(str: string, y: number, b_w: number, b_h: number, func: () => any) {
         const button = new PIXI.Graphics()
@@ -335,6 +346,7 @@ export class CreateStageTool extends Scene{
         Screen.init().app.stage.addChild(button)
     }
     private drawInfomationText() {
+        if(this.releaseFlag)return
         const app = Screen.init().app
         const mouse = app.renderer.plugins.interaction.mouse.global
         let x = mouse.x - this.container.x - this.temp.x
@@ -343,7 +355,7 @@ export class CreateStageTool extends Scene{
         x = this.arrangePos(x)
         y = this.arrangePos(HEIGHT - y)
         let max_y = 0
-        this.pos.forEach(n => max_y = Math.max(max_y, HEIGHT - Math.floor(n / WIDTH)))
+        this.pos.forEach(n => max_y = Math.max(max_y, HEIGHT - Math.floor(n / (WIDTH + unit))))
         const str = "X    : " + x + "\nY    : " + y + "\nMaxY : " + max_y + "\nDiff : " + (y - max_y)
         const text = new PIXI.Text(str, {
             fontFamily: 'Arial',
@@ -384,7 +396,7 @@ export class CreateStageTool extends Scene{
                 y -= data[i].param
             }
             else {
-                this.setSprite(name, y * WIDTH + data[i].param)
+                this.setSprite(name, y * (WIDTH + unit) + data[i].param)
             }
         }
         this.saveFlag = true

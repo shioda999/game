@@ -10,9 +10,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/pixi.js": "^5.0.0"
+    "@types/pixi.js": "^5.0.0",
+    "pixi-sound": "^3.0.5"
   },
   "devDependencies": {
+    "hard-source-webpack-plugin": "^0.13.1",
     "ts-loader": "^6.2.1",
     "typescript": "^3.8.3",
     "webpack": "^4.42.0",

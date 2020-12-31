@@ -1,13 +1,13 @@
 import * as PIXI from "pixi.js"
 import { Scene } from './Scene';
-import {WIDTH, HEIGHT, GlobalParam} from './global'
-import {Key} from './key'
+import { WIDTH, HEIGHT, GlobalParam } from './global'
+import { Key } from './key'
 import { ItemManager } from './ItemManager';
 import { Sound } from './Sound';
 const fontsize = HEIGHT / 30
 export class Title extends Scene {
 	private key: Key
-	private loopID: number
+	private loopID: any
 	private item_manager: ItemManager
 	private text: PIXI.Text
 	constructor(container: PIXI.Container) {
@@ -42,7 +42,7 @@ export class Title extends Scene {
 			strokeThickness: 17,
 			textBaseline: "middle"
 		});
-		this.text = new PIXI.Text("SShooting", style)
+		this.text = new PIXI.Text("Shooting", style)
 		this.text.position.set(WIDTH / 2, HEIGHT / 4.5)
 		this.text.anchor.set(0.5, 0.5)
 		container.addChild(this.text)
@@ -51,18 +51,18 @@ export class Title extends Scene {
 		this.item_manager.appendItem("ゲームスタート", HEIGHT / 15, [0xffffff, 0xcccccc, 0x555555])
 		this.item_manager.appendItem("操作方法", HEIGHT / 15, [0xffffff, 0xcccccc, 0x555555])
 
-        const text2 = new PIXI.Text("上下キーでフォーカス移動, Zキーで決定, Xキーで戻る", new PIXI.TextStyle({
-            fontFamily: "Arial",
-            fontWeight: "bold",
-            fontSize: fontsize,
-            fill: [0x3333ff, 0x3333bb]
-        }))
-        text2.position.set(WIDTH / 2, HEIGHT * 0.9)
+		const text2 = new PIXI.Text("上下キーでフォーカス移動, Zキーで決定, Xキーで戻る", new PIXI.TextStyle({
+			fontFamily: "Arial",
+			fontWeight: "bold",
+			fontSize: fontsize,
+			fill: [0x3333ff, 0x3333bb]
+		}))
+		text2.position.set(WIDTH / 2, HEIGHT * 0.9)
 		text2.anchor.set(0.5)
 		container.addChild(text2)
-		
+
 		this.key = Key.GetInstance()
-        this.key.key_register({code: ["KeyR"], name: "r"})
+		this.key.key_register({ code: ["KeyR"], name: "r" })
 		this.loopID = setInterval(() => this.loop(), 30)
 	}
 	private decide() {
@@ -79,6 +79,6 @@ export class Title extends Scene {
 		if (GlobalParam.pause_flag) return
 		this.key.RenewKeyData()
 		this.item_manager.update()
-		if(this.key.IsPress("r"))this.gotoScene("make_stage")
+		if (this.key.IsPress("r")) this.gotoScene("make_stage")
 	}
 }

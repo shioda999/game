@@ -12,7 +12,14 @@ import { ScoreBoard } from './ScoreBoard'
 import { GameOver } from "./GameOver";
 import { BackGround } from "./BackGround";
 const FPS_UPDATE_FREQ = 20
+const text_style = new PIXI.TextStyle({
+	fontFamily: "Arial",
+	fontSize: 16,
+	fill: [0xffffff]
+})
 export class Game extends Scene {
+	private score_text: PIXI.Text
+	private coin_sprite: PIXI.Sprite
 	private stage: number = 1
 	private curTime: number
 	private prevTime: number
@@ -45,6 +52,12 @@ export class Game extends Scene {
 		})
 		ItemObj.setCollisionFunc(this.AddScore)
 		Sound.play("bgm", true, GlobalParam.bgm_volume)
+
+		this.coin_sprite = inst.GetSprite("coin1")
+		this.coin_sprite.scale.set(0.5)
+		this.coin_sprite.anchor.set(0, 1)
+		this.coin_sprite.position.set(0, HEIGHT)
+		this.container.addChild(this.coin_sprite)
 	}
 	private loop = () => {
 		if(this.releaseFlag)return
@@ -76,6 +89,7 @@ export class Game extends Scene {
 		this.background.update()
 		this.objmanager.update()
 		this.objmanager.draw()
+		this.update_score_text()
 		if(this.countFrame % FPS_UPDATE_FREQ === 0){
 			this.prevTime = this.curTime
 			this.curTime = new Date().getTime()
@@ -119,5 +133,13 @@ export class Game extends Scene {
 	}
 	private getPlayerLp(): number {
 		return this.objmanager.getPlayerLp()
+	}
+	private update_score_text() {
+		this.container.removeChild(this.score_text)
+		this.score_text = new PIXI.Text("    × " + this.score, text_style)
+		this.score_text.position.set(0, HEIGHT)
+		this.score_text.anchor.x = 0
+		this.score_text.anchor.y = 1.0
+		this.container.addChild(this.score_text)
 	}
 }

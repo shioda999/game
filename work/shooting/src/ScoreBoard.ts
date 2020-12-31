@@ -1,11 +1,11 @@
 import * as PIXI from "pixi.js"
 import { Scene } from './Scene';
-import {WIDTH, HEIGHT, GlobalParam} from './global'
-import {Key} from './key'
+import { WIDTH, HEIGHT, GlobalParam } from './global'
+import { Key } from './key'
 import { Sound } from "./Sound";
 export class ScoreBoard extends Scene {
     private key: Key
-    private loopID: number
+    private loopID: any
     private bar: Bar
     private state: number = 0
     private text: PIXI.Text
@@ -29,7 +29,7 @@ export class ScoreBoard extends Scene {
         const life_bonus = 500
         if (GlobalParam.pause_flag) return
         this.key.RenewKeyData()
-        if(Key.GetInstance().IsPress("decide"))this.bar.skip()
+        if (Key.GetInstance().IsPress("decide")) this.bar.skip()
         if (this.bar.check()) {
             switch (this.state) {
                 case 0:
@@ -77,14 +77,19 @@ export class ScoreBoard extends Scene {
                             Sound.stop("all")
                             Sound.play("push_z", false, GlobalParam.se_volume)
                             clearInterval(this.loopID)
-                            this.gotoScene("back")
+                            if (GlobalParam.new_employment) {
+                                GlobalParam.new_employment = false
+                                this.exitCurrentScene()
+                                this.gotoScene("upgrade")
+                            }
+                            else this.gotoScene("back")
                         }
                     }
                     break
             }
         }
         this.bar.update()
-        if(this.text && this.state <= 2)this.text.alpha = Math.max(0, this.text.alpha - 0.003)
+        if (this.text && this.state <= 2) this.text.alpha = Math.max(0, this.text.alpha - 0.003)
     }
     private drawText(str: string) {
         if (this.text) {
@@ -146,7 +151,7 @@ class Bar {
     public update() {
         let speed: number = Math.max(Math.min(this.max_speed, (this.value - this.current) / 10), 8)
         this.current = Math.min(this.current + speed, this.value)
-        if(this.value != this.current && this.count % 3 == 0)Sound.play("increase", false, GlobalParam.se_volume * 0.6)
+        if (this.value != this.current && this.count % 3 == 0) Sound.play("increase", false, GlobalParam.se_volume * 0.6)
         this.bar.clear()
 
         let color = this.color[Math.round(Math.floor(this.current / this.K) % this.color.length)]

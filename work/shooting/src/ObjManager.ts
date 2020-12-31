@@ -1,14 +1,15 @@
 import * as PIXI from 'pixi.js'
-import {Obj} from './Obj'
-import {Player} from './Player'
-import { P_Straight, Straight, FirstSlow, LastSlow, Missile} from './Bullet'
-import {WIDTH, HEIGHT} from './global'
+import { Obj } from './Obj'
+import { Player } from './Player'
+import { P_Straight, Straight, FirstSlow, LastSlow, Missile, Reflect, StraightMissile } from './Bullet'
+import { WIDTH, HEIGHT } from './global'
 import { Enemy, Enemy_A, Enemy_B, Enemy_C, Enemy_D, Enemy_E, Enemy_F } from './Enemy'
-import {Effect, Damage, ShockWave} from './Effect'
-import {Stage}from './Stage'
+import { Effect, Damage, ShockWave, SmallDamage } from './Effect'
+import { Stage } from './Stage'
 import { Coin1, Coin10 } from './ItemObj'
-import { Boss_A, Boss_B, Boss_C } from './Boss'
-export class ObjManager{
+import { Boss_A, Boss_B, Boss_C, Boss_D, Boss_E } from './Boss'
+import { Beam } from './Beam'
+export class ObjManager {
     stage: Stage
     player: Player[] = []
     player_bullet: any[] = []
@@ -16,17 +17,19 @@ export class ObjManager{
     enemy_bullet: any[] = []
     effects: any[] = []
     itemobj: any[] = []
+    player_beam: any[] = []
+    enemy_beam: any[] = []
     stage_clear_flag: boolean = false
     wait_count: number = 30
-    constructor(container : PIXI.Container){
+    constructor(container: PIXI.Container) {
         this.stage = new Stage()
         Obj.SetGlobalContainer(container)
-        Obj.SetCreateFunc(this.CreateObj, this.CreateBullet, this.CreateEffect, this.CreateItemObj,
-        this.changeBulletToCoin, this.SearchTarget)
+        Obj.SetCreateFunc(this.CreateObj, this.CreateBullet, this.CreateEffect, this.CreateItemObj, this.CreateBeam,
+            this.changeBulletToCoin, this.SearchTarget)
     }
-    private CreateObj = (name: string, x: number, y: number, is_enemy: boolean)=>{
+    private CreateObj = (name: string, x: number, y: number, is_enemy: boolean) => {
         let target
-        if(!is_enemy)target = this.player
+        if (!is_enemy) target = this.player
         else target = this.enemy
         target.push(new {
             player: Player,
@@ -38,82 +41,101 @@ export class ObjManager{
             enemy_F: Enemy_F,
             boss_A: Boss_A,
             boss_B: Boss_B,
-            boss_C: Boss_C
-        }[name](x,y,is_enemy))
+            boss_C: Boss_C,
+            boss_D: Boss_D,
+            boss_E: Boss_E,
+        }[name](x, y, is_enemy))
     }
-    private CreateBullet = (name: string, x: number, y: number, color: string, angle: number, speed: number, is_enemy: boolean)=>{
+    private CreateBullet = (name: string, x: number, y: number, color: string, angle: number, speed: number, is_enemy: boolean, size: number) => {
         let target
-        if(!is_enemy)target = this.player_bullet
+        if (!is_enemy) target = this.player_bullet
         else target = this.enemy_bullet
         let inst = new {
             p_straight: P_Straight,
             straight: Straight,
             first_slow: FirstSlow,
             last_slow: LastSlow,
-            missile: Missile
-        }[name](x,y,is_enemy, angle, speed, color)
+            missile: Missile,
+            reflect: Reflect,
+            straightmissile: StraightMissile
+        }[name](x, y, is_enemy, angle, speed, color, size)
         target.push(inst)
     }
     private CreateEffect = (name: string, x: number, y: number) => {
         let inst = new {
             damage: Damage,
+            small_damage: SmallDamage,
             shockwave: ShockWave
-        }[name](x,y)
+        }[name](x, y)
         this.effects.push(inst)
     }
     private CreateItemObj = (name: string, x: number, y: number) => {
         let inst = new {
             coin1: Coin1,
             coin10: Coin10,
-        }[name](x,y)
+        }[name](x, y)
         this.itemobj.push(inst)
     }
-    public update(){
-        let target = [this.player, this.player_bullet, this.enemy, this.enemy_bullet, this.effects, this.itemobj]
+    private CreateBeam = (target: Obj, root: Obj, dx: number, dy: number, color: number, auto_focus = true, time = 50, thick = 10) => {
+        let inst = new Beam(target, root, dx, dy, color, auto_focus, time, thick)
+        if (root.Is_Enemy()) this.enemy_beam.push(inst)
+        else this.player_beam.push(inst)
+    }
+    public update() {
+        let target = [this.player, this.player_bullet, this.enemy, this.enemy_bullet, this.effects, this.itemobj, this.player_beam, this.enemy_beam]
 
         let r = this.CreateObjectsFromStageData()
 
         if (r == "end" && this.enemy.length == 0) {
             this.player.forEach(n => n.stage_flag = false)
             this.changeBulletToCoin()
-            if(this.itemobj.length == 0){
+            if (this.itemobj.length == 0) {
                 this.stage_clear_flag = true
             }
         }
-        if(this.getPlayerLp() == 0)this.wait_count--
+        if (this.getPlayerLp() == 0) this.wait_count--
 
-        target.forEach(n =>{
+        target.forEach(n => {
             n.forEach(n => { n.update(), n.reset_damageFlag() })
         })
-        this.player.forEach(n =>{
+        this.player.forEach(n => {
             this.enemy_bullet.forEach(n2 => n.check_collision(n2))
         })
-        this.player.forEach(n =>{
+        this.player.forEach(n => {
             this.enemy.forEach(n2 => n.check_collision(n2))
         })
-        this.player.forEach(n =>{
+        this.player.forEach(n => {
             this.itemobj.forEach(n2 => n.itemobj_collision(n2))
         })
-        this.enemy.forEach(n =>{
+        this.player.forEach(n => {
+            this.enemy_beam.forEach(n2 => n.check_collision_beam(n2.check_collision))
+        })
+        this.enemy.forEach(n => {
             this.player_bullet.forEach(n2 => n.check_collision(n2))
         })
+        this.enemy.forEach(n => {
+            this.player_beam.forEach(n2 => n.check_collision_beam(n2.check_collision))
+        })
+
         this.player = this.player.filter(n => n.check_and_delete())
         this.player_bullet = this.player_bullet.filter(n => n.check_and_delete())
         this.enemy = this.enemy.filter(n => n.check_and_delete())
         this.enemy_bullet = this.enemy_bullet.filter(n => n.check_and_delete())
         this.effects = this.effects.filter(n => n.check_and_delete())
         this.itemobj = this.itemobj.filter(n => n.check_and_delete())
+        this.player_beam = this.player_beam.filter(n => n.check_and_delete())
+        this.enemy_beam = this.enemy_beam.filter(n => n.check_and_delete())
     }
-    public draw(){
-        let target = [this.player, this.player_bullet, this.enemy, this.enemy_bullet, this.effects, this.itemobj]
-        target.forEach(n =>{
+    public draw() {
+        let target = [this.player, this.player_bullet, this.enemy, this.enemy_bullet, this.effects, this.itemobj, this.player_beam, this.enemy_beam]
+        target.forEach(n => {
             n.forEach(n => n.draw())
         })
     }
-    public release(){
-		delete this.player
+    public release() {
+        delete this.player
     }
-    public setPlayer(){
+    public setPlayer() {
         this.CreateObj("player", WIDTH / 2, HEIGHT * 3 / 4, false)
     }
     public is_clear() {
@@ -122,23 +144,22 @@ export class ObjManager{
     public is_gameover() {
         return this.wait_count <= 0
     }
-    private CreateObjectsFromStageData(){
+    private CreateObjectsFromStageData() {
         let data = this.stage.readStageData(this.enemy.length)
-        if(data == undefined)return
-        if(data === "end")return "end"
+        if (data == undefined) return
+        if (data === "end") return "end"
         data.forEach(n => {
-            console.log(n.name)
             this.CreateObj(n.name, n.param, -32, true)
         })
     }
-    private changeBulletToCoin = ()=> {
+    private changeBulletToCoin = () => {
         this.enemy_bullet.forEach(n => {
             this.CreateItemObj("coin1", n.x, n.y)
             n.delete()
         })
     }
     public getPlayerLp(): number {
-        if(this.player.length == 0)return 0
+        if (this.player.length == 0) return 0
         return this.player[0].getLp()
     }
     public continue() {
@@ -154,7 +175,7 @@ export class ObjManager{
         let l = WIDTH * WIDTH + HEIGHT * HEIGHT
         targets.forEach(n => {
             let t = (obj.getX() - n.getX()) * (obj.getX() - n.getX()) + (obj.getY() - n.getY()) * (obj.getY() - n.getY())
-            if(l > t)target = n, l = t
+            if (l > t) target = n, l = t
         })
         return target
     }

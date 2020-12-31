@@ -1,5 +1,5 @@
 import * as PIXI from "pixi.js"
-import {WIDTH, HEIGHT} from './global'
+import {WIDTH, HEIGHT, BOSS_DATA} from './global'
 import {GraphicManager} from './GraphicManager'
 import {Scene} from './Scene'
 import {Screen} from './Screen'
@@ -95,6 +95,11 @@ export class CreateStageTool extends Scene{
                 sprite.scale.x = sprite.scale.y = Math.min(p_w / sprite.width, p_w / sprite.height)
                 this.enemy_list.push(sprite)
             })
+            BOSS_DATA.forEach(n => {
+                let sprite = inst.GetSprite(n.name)
+                sprite.scale.x = sprite.scale.y = Math.min(p_w / sprite.width, p_w / sprite.height)
+                this.enemy_list.push(sprite)
+            })
             Screen.init().AddOnresizeFunc(this.set)
             this.set()
         })
@@ -112,7 +117,7 @@ export class CreateStageTool extends Scene{
         ENEMY_DATA.forEach((n, id) => {
             if(n.name == "waitLine")this.waitline_id = id
         })
-        for(i = 0; i < ENEMY_DATA.length; i++){
+        for(i = 0; i < ENEMY_DATA.length + BOSS_DATA.length; i++){
             this.enemy_list[i].x = list_x + (i % list_w_num) * w
             this.enemy_list[i].y = list_y + Math.floor(i / list_w_num) * w
             this.enemy_list[i].zIndex = 3
@@ -153,7 +158,7 @@ export class CreateStageTool extends Scene{
         const b = Math.floor((mouse.y - list_y + w / 2) / w) * list_w_num
         if(0 <= a && a <= list_w_num){
             const id = a + b
-            if(id < ENEMY_DATA.length){
+            if(id < ENEMY_DATA.length + BOSS_DATA.length){
                 this.selectingID = id
                 this.fog.x = this.enemy_list[id].x,
                 this.fog.y = this.enemy_list[id].y,
@@ -178,7 +183,10 @@ export class CreateStageTool extends Scene{
         }
         if(!this.key.IsPress_Now("shift"))return
         if (this.selectingID < 0) return
-        this.setSprite(ENEMY_DATA[this.selectingID].name, pos)
+        let name
+        if (this.selectingID < ENEMY_DATA.length) name = ENEMY_DATA[this.selectingID].name
+        else name = BOSS_DATA[this.selectingID - ENEMY_DATA.length].name
+        this.setSprite(name, pos)
     }
     private setSprite(name: string, pos: number) {
         this.pos.push(this._pos = pos)
@@ -315,7 +323,11 @@ export class CreateStageTool extends Scene{
         const b_w = w * 2, b_h = w
         this.createButton("読込", HEIGHT + this.container.y - b_h * 2.3, b_w, b_h, () => this.load())
         this.createButton("保存", HEIGHT + this.container.y - b_h, b_w, b_h, () => this.output())
-        this.createButton("戻る", HEIGHT + this.container.y - b_h * 3.6, b_w, b_h, () => this.gotoScene("back"))
+        this.createButton("戻る", HEIGHT + this.container.y - b_h * 3.6, b_w, b_h, () => {
+            let result = confirm("未保存の場合データが破棄されますがよろしいですか？")
+            if(!result)return
+            this.gotoScene("back")
+        })
     }
     private createButton(str: string, y: number, b_w: number, b_h: number, func: () => any) {
         const button = new PIXI.Graphics()

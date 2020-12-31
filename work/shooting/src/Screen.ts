@@ -13,7 +13,7 @@ export class Screen {
     private speaker_off_texture: PIXI.Texture
     private option_capture_container: PIXI.Container
     private speaker_capture_container: PIXI.Container
-    private rotateGearIntervalID: number
+    private rotateGearIntervalID: any
     public app: PIXI.Application
     public OnresizeFunctions = []
     constructor() {
@@ -28,22 +28,23 @@ export class Screen {
             this.OnresizeFunctions.forEach(n => n())
         }
     }
-    public static init(){
+    public static init() {
         if (!this.instance)
             this.instance = new Screen();
         return this.instance;
     }
-    public getContainer(){
+    public getContainer() {
         return this.container
     }
     private setPosition = () => {
         let temp = this.app
-        this.app = new PIXI.Application({ backgroundColor: 0 ,
+        this.app = new PIXI.Application({
+            backgroundColor: 0,
             width: document.documentElement.clientWidth,
             height: document.documentElement.clientHeight - 10,
             antialias: true
         })
-        if(temp){
+        if (temp) {
             document.body.removeChild(temp.view)
             temp.stage.removeChildren()
             temp.destroy()
@@ -55,8 +56,8 @@ export class Screen {
         this.container.y = (document.documentElement.clientHeight - HEIGHT) / 2
 
         const frame = new PIXI.Graphics()
-        frame.beginFill(0,0)
-        frame.lineStyle(Math.max(this.container.x, this.container.y), 0x1099bb,1.0, 1)
+        frame.beginFill(0, 0)
+        frame.lineStyle(Math.max(this.container.x, this.container.y), 0x1099bb, 1.0, 1)
         frame.drawRect(this.container.x, this.container.y, WIDTH, HEIGHT)
         frame.endFill()
         frame.zIndex = 1
@@ -74,10 +75,10 @@ export class Screen {
             this.app.stage.addChild(this.speaker)
         }
     }
-    public AddOnresizeFunc(func){
+    public AddOnresizeFunc(func) {
         this.OnresizeFunctions.push(func)
     }
-    public DeleteOnresizeFunc(func){
+    public DeleteOnresizeFunc(func) {
         this.OnresizeFunctions = this.OnresizeFunctions.filter(n => n != func)
     }
     private setOptionGraphic() {
@@ -178,8 +179,8 @@ export class Screen {
     }
     private setShortCutKey() {
         document.addEventListener('keydown', (event) => {
-            if(event.code == "KeyM")this.speakerClick()
-            if(event.code == "KeyP")this.optionClick()
+            if (event.code == "KeyM") this.speakerClick()
+            if (event.code == "KeyP") this.optionClick()
         })
     }
     private setOptionForm() {

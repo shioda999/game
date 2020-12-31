@@ -83,7 +83,7 @@ export class Enemy_E extends Enemy{
         if (this.y < HEIGHT / 4) this.y += 2
         else {
             if (this.count % 100 < 30 && this.count % 10 == 0) {
-                this.CreateBullet("missile", this.x, this.y, "", this.calcAngleToPlayer(), 5)
+                this.CreateBullet("missile", this.x, this.y, "", this.calcAngleToPlayer(), 5, 1.5)
             }
             this.count++
             this.count %= 400

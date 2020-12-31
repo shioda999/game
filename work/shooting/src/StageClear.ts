@@ -1,6 +1,6 @@
 import * as PIXI from "pixi.js"
 import {Scene} from './Scene';
-import {WIDTH, HEIGHT, GlobalParam, save} from './global'
+import {WIDTH, HEIGHT, GlobalParam, save, RAPID, SPEED, SIZE} from './global'
 import {Key} from './key'
 import {Sound} from './Sound'
 const FPS_UPDATE_FREQ = 20
@@ -75,7 +75,8 @@ export class StageClear {
                 GlobalParam.save_data.unlock.size[1] = true
                 if (GlobalParam.save_data.clear < 1) {
                     GlobalParam.save_data.clear = 1
-                    this.messagebox("新しい装備を手に入れました\n\n ● 連射速度 8回/秒\n ● 砲口初速 ×2\n ● 寸法 ×0.85")
+                    GlobalParam.new_employment = true
+                    this.messagebox("新しい装備を手に入れました\n\n ● 連射速度 "+RAPID[1]+"回/秒\n ● 砲口初速 ×"+SPEED[1]+"\n ● 寸法 ×"+SIZE[1])
                 }
                 else this.count = 400
                 break
@@ -84,15 +85,18 @@ export class StageClear {
                 GlobalParam.save_data.unlock.child[1] = true
                 if (GlobalParam.save_data.clear < 2) {
                     GlobalParam.save_data.clear = 2
-                    this.messagebox("新しい装備を手に入れました\n\n ● 予備兵器　サブ弾\n ● 子機 1個")
+                    GlobalParam.save_data.max_cost = 200
+                    GlobalParam.new_employment = true
+                    this.messagebox("新しい装備を手に入れました\n\n ● 予備兵器　サブ弾\n ● 子機 1個\n\nコスト上限100 → 200")
                 }
                 else this.count = 400
                 break
             case 3:
                 GlobalParam.save_data.unlock.sub[2] = true
-                GlobalParam.save_data.unlock.sub[2] = true
+                GlobalParam.save_data.unlock.sub[3] = true
                 if (GlobalParam.save_data.clear < 3) {
                     GlobalParam.save_data.clear = 3
+                    GlobalParam.new_employment = true
                     this.messagebox("新しい装備を手に入れました\n\n ● 予備兵器　ミサイル\n ● 予備兵器　ビーム")
                 }
                 else this.count = 400

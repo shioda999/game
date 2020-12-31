@@ -1,8 +1,8 @@
 import * as PIXI from "pixi.js"
-import {Scene} from './Scene';
-import {WIDTH, HEIGHT, GlobalParam} from './global'
-import {Key} from './key'
-import {Sound} from './Sound'
+import { Scene } from './Scene';
+import { WIDTH, HEIGHT, GlobalParam } from './global'
+import { Key } from './key'
+import { Sound } from './Sound'
 import { ItemManager } from "./ItemManager";
 const FPS_UPDATE_FREQ = 20
 const style = new PIXI.TextStyle({
@@ -48,10 +48,10 @@ export class GameOver {
     }
     private loop = () => {
         if (this.releaseFlag) return
-		requestAnimationFrame(this.loop)
+        requestAnimationFrame(this.loop)
         this.count++
         Key.GetInstance().RenewKeyData()
-        
+
         if (this.count >= 50 && this.count < 250 && Key.GetInstance().IsPress("decide")) {
             this.count = 250, this.text.y = HEIGHT / 2 - 150
         }
@@ -76,7 +76,7 @@ export class GameOver {
             this.item_manager.update()
         }
     }
-    private decide = ()=> {
+    private decide = () => {
         let focus = this.item_manager.getFocus()
         if (focus == 0) {
             this.func()

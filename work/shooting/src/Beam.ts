@@ -1,8 +1,8 @@
 import * as PIXI from "pixi.js"
-import {WIDTH, HEIGHT, ENEMY_DATA, GlobalParam} from './global'
+import { WIDTH, HEIGHT, ENEMY_DATA, GlobalParam } from './global'
 import { Obj } from "./Obj"
 const length = Math.pow(WIDTH * WIDTH + HEIGHT * HEIGHT, 0.5)
-export class Beam{
+export class Beam {
     private graph: PIXI.Graphics
     private count: number = 0
     private angle: number
@@ -10,11 +10,17 @@ export class Beam{
     readonly rate = 1.5
     private deleteflag: boolean = false
     private beam: PIXI.Graphics[] = []
-    constructor(private target: Obj, private root: Obj, private dx, private dy, private color: number, private time = 50, private thick = 10) {
+    private on = false
+    constructor(private target: Obj, private root: Obj, private dx, private dy, private color: number, private auto_focus, private time, private thick) {
         this.graph = new PIXI.Graphics()
         this.thick /= 2
         Obj.container.addChild(this.graph)
-        this.angle = root.calcAngleToTarget(target)
+        if (target) {
+            let tx = this.target.getX()
+            let ty = this.target.getY()
+            this.angle = this.root.calcAngle(tx - this.dx, ty - this.dy)
+        }
+        else this.angle = this.root.calcAngleToTarget(target)
         this.CreateBeamGraphic()
     }
     private CreateBeamGraphic() {
@@ -31,8 +37,22 @@ export class Beam{
             this.beam.push(beam)
         }
     }
-    public update() {
-        if(this.deleteflag)return
+    public update() { }
+    public reset_damageFlag() { }
+    public delete() {
+        this.deleteflag = true
+        Obj.container.removeChild(this.graph)
+        this.beam.forEach(n => n.destroy())
+    }
+    private check_collision = (x: number, y: number, r: number) => {
+        if (!this.on) return false
+        let d = Math.abs(x + Math.tan(this.angle) * y - (this.root.getX() + this.dx) - (this.root.getY() + this.dy) * Math.tan(this.angle)) * Math.abs(Math.cos(this.angle))
+        let t = (this.root.calcAngle(x - this.dx, y - this.dy) - this.angle) + 4 * Math.PI
+        while (t > Math.PI) t -= Math.PI * 2
+        return Math.atan(-this.rate) <= t && t <= Math.atan(this.rate) && d <= this.thick + r
+    }
+    private draw() {
+        if (this.deleteflag) return
         if (this.count <= this.time) {
             this.graph.clear()
             this.graph.blendMode = PIXI.BLEND_MODES.NORMAL
@@ -46,23 +66,27 @@ export class Beam{
             this.graph.lineTo(-thick, -length)
         }
         else {
+            this.on = true
             Obj.container.removeChild(this.graph)
-            if (this.count == this.time + 1)this.graph.destroy()
+            if (this.count == this.time + 1) this.graph.destroy()
             this.graph = this.beam[this.count % 3 == 0 ? 1 : 0]
             Obj.container.addChild(this.graph)
-            if(this.count == this.time + 20)this.delete()
+            if (this.count == this.time + 20) {
+                this.on = false
+                this.delete()
+                return
+            }
         }
-        this.angle = this.root.calcAngleToTarget(this.target)
+        if (this.auto_focus && this.target) {
+            let tx = this.target.getX()
+            let ty = this.target.getY()
+            this.angle = this.root.calcAngle(tx - this.dx, ty - this.dy)
+        }
         this.graph.position.set(this.root.getX() + this.dx, this.root.getY() + this.dy)
         this.graph.rotation = this.angle
         this.count++
     }
-    public delete() {
-        this.deleteflag = true
-        Obj.container.removeChild(this.graph)
-        this.beam.forEach(n => n.destroy())
-    }
-    private check_collision() {
-        
+    public check_and_delete() {
+        return !this.deleteflag
     }
 }

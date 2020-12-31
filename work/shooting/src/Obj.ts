@@ -1,10 +1,10 @@
 import * as PIXI from "pixi.js"
-import {WIDTH, HEIGHT, ENEMY_DATA, GlobalParam, BOSS_DATA} from './global'
-import {GraphicManager} from './GraphicManager'
-import {Key} from './key'
+import { WIDTH, HEIGHT, ENEMY_DATA, GlobalParam, BOSS_DATA } from './global'
+import { GraphicManager } from './GraphicManager'
+import { Key } from './key'
 import { Sound } from "./Sound"
 import { PLAYER_RANGE, PLAYER_LP } from "./global"
-export class Obj{
+export class Obj {
     protected static px: number
     protected static py: number
     protected static key: Key
@@ -20,17 +20,18 @@ export class Obj{
     protected delete_callback: () => any
     protected static player_x: number
     protected static player_y: number
-    private static func : (name: string, x: number, y: number, is_enemy: boolean) => any
-    private static bullet_func : (name: string, x: number, y: number, color: string, angle: number, speed: number, is_enemy: boolean) => any
+    private static func: (name: string, x: number, y: number, is_enemy: boolean) => any
+    private static bullet_func: (name: string, x: number, y: number, color: string, angle: number, speed: number, is_enemy: boolean, size) => any
     private static effect_func: (name: string, x: number, y: number) => any
-    private static itemobj_func : (name: string, x: number, y: number) => any
+    private static itemobj_func: (name: string, x: number, y: number) => any
+    private static beam_func: (target: Obj, root: Obj, dx: number, dy: number, color: number, auto_focus: boolean, time: number, thick: number) => any
     protected static change_bullet_to_coin_func: () => any
     protected static search_target_func: (obj: Obj) => any
-    constructor(spriteName: string, protected x: number, protected y: number, protected is_enemy: boolean, index?: number[]){
+    constructor(spriteName: string, protected x: number, protected y: number, protected is_enemy: boolean, index?: number[]) {
         this.x = x, this.y = y
         this.sprite = GraphicManager.GetInstance().GetSprite(spriteName, index)
         this.setter(spriteName)
-        if(!Obj.key){
+        if (!Obj.key) {
             Obj.key = Key.GetInstance()
         }
         Obj.container.addChild(this.sprite)
@@ -60,9 +61,10 @@ export class Obj{
         //this.Ap = Ap
     }
     public static SetCreateFunc(func: (name: string, x: number, y: number, is_enemy: boolean) => any,
-        bullet_func: (name: string, x: number, y: number, color: string, angle: number, speed: number, is_enemy: boolean) => any,
+        bullet_func: (name: string, x: number, y: number, color: string, angle: number, speed: number, is_enemy: boolean, size: number) => any,
         effect_func: (name: string, x: number, y: number) => any,
         itemobj_func: (name: string, x: number, y: number) => any,
+        beam_func: (target: Obj, root: Obj, dx: number, dy: number, color: number, auto_focus: boolean, time: number, thick: number) => any,
         change_bullet_to_coin_func: () => any,
         search_target_func: (obj: Obj) => any,
     ) {
@@ -70,19 +72,20 @@ export class Obj{
         this.bullet_func = bullet_func
         this.effect_func = effect_func
         this.itemobj_func = itemobj_func
+        this.beam_func = beam_func
         this.change_bullet_to_coin_func = change_bullet_to_coin_func
         this.search_target_func = search_target_func
     }
-    public CreateObject(name: string, x: number, y: number){
+    public CreateObject(name: string, x: number, y: number) {
         Obj.func(name, x, y, this.is_enemy)
     }
-    public CreateBullet(name: string, x: number, y: number, color: string, angle?: number, speed?: number){
-        if(angle === undefined){
-            if(!this.is_enemy)angle = 270
+    public CreateBullet(name: string, x: number, y: number, color: string, angle?: number, speed?: number, size = 1) {
+        if (angle === undefined) {
+            if (!this.is_enemy) angle = 270
             else angle = 90
         }
-        if(speed === undefined)speed = 2
-        Obj.bullet_func(name, x, y, color, angle, speed, this.is_enemy)
+        if (speed === undefined) speed = 2
+        Obj.bullet_func(name, x, y, color, angle, speed, this.is_enemy, size)
     }
     public CreateItemObj(name: string, x: number, y: number) {
         Obj.itemobj_func(name, x, y)
@@ -96,104 +99,111 @@ export class Obj{
             this.CreateItemObj("coin10",
                 x + r * Math.cos(Math.random() * 2 * Math.PI),
                 y + r * Math.sin(Math.random() * 2 * Math.PI))
-            r+=3
+            r += 1
         }
         for (let i = 0; i < n1; i++) {
             this.CreateItemObj("coin1",
                 x + r * Math.cos(Math.random() * 2 * Math.PI),
                 y + r * Math.sin(Math.random() * 2 * Math.PI))
-            r+=3
+            r += 3
         }
+    }
+    public CreateBeam(target: Obj, root: Obj, dx: number, dy: number, color: number, auto_focus = true, time = 50, thick = 10) {
+        Obj.beam_func(target, root, dx, dy, color, auto_focus, time, thick)
     }
     public SearchTarget() {
         return Obj.search_target_func(this)
     }
-    public static updatePlayerPos(x: number, y: number){
+    public static updatePlayerPos(x: number, y: number) {
         this.player_x = x, this.player_y = y
     }
-    public check_and_delete(){
+    public check_and_delete() {
         let flag = this.x > -WIDTH / 10 && this.x < WIDTH * 11 / 10
-            && this. y > -HEIGHT / 10 && this.y < HEIGHT * 11 / 10 && this.flag
-        if(!flag)this.release()
+            && this.y > -HEIGHT / 10 && this.y < HEIGHT * 11 / 10 && this.flag
+        if (!flag) {
+            this.release()
+        }
         return flag
     }
-    public check_collision(obj: Obj){
-        if(!this.muteki_flag
-            && Math.pow( this.x - obj.x, 2) + Math.pow( this.y - obj.y, 2) < Math.pow(this.range + obj.range, 2)){
+    public check_collision(obj: Obj) {
+        if (!this.muteki_flag
+            && Math.pow(this.x - obj.x, 2) + Math.pow(this.y - obj.y, 2) < Math.pow(this.range + obj.range, 2)) {
             this.Lp -= obj.Ap
             this.damageFlag = true
-            if(obj.collision_callback)obj.collision_callback()
+            if (obj.collision_callback) obj.collision_callback()
             if (this.Lp <= 0) {
                 this.delete()
                 this.createDamageEffect()
             }
         }
     }
-    /*public check_collision_beam(x: number, y: number, angle: number, thick: number) {
-        if(!this.muteki_flag
-            && Math.pow( this.x - obj.x, 2) + Math.pow( this.y - obj.y, 2) < Math.pow(this.range + obj.range, 2)){
-            this.Lp -= obj.Ap
+    public check_collision_beam(func: (x, y, r) => any) {
+        if (!this.muteki_flag
+            && func(this.x, this.y, this.range)) {
+            this.Lp -= 0.5
             this.damageFlag = true
-            if(obj.collision_callback)obj.collision_callback()
             if (this.Lp <= 0) {
                 this.delete()
                 this.createDamageEffect()
             }
         }
-    }*/
+    }
     public itemobj_collision(obj: Obj) {
-        if(Math.pow( this.x - obj.x, 2) + Math.pow( this.y - obj.y, 2) < Math.pow(this.range + obj.range, 2)){
-            if(obj.collision_callback)obj.collision_callback()
+        if (Math.pow(this.x - obj.x, 2) + Math.pow(this.y - obj.y, 2) < Math.pow(this.range + obj.range, 2)) {
+            if (obj.collision_callback) obj.collision_callback()
         }
     }
     protected delete() {
-        if(this.delete_callback)this.delete_callback()
+        if (this.delete_callback) this.delete_callback()
         this.flag = false
     }
-    protected adjustPosition(){
+    protected adjustPosition() {
         this.x = Math.min(Math.max(0, this.x), WIDTH)
         this.y = Math.min(Math.max(0, this.y), HEIGHT)
     }
-    public draw(){
+    public draw() {
         this.sprite.x = this.x
         this.sprite.y = this.y
     }
-    public getWidth(){
+    public getWidth() {
         return this.sprite.width
     }
-    public getHeight(){
+    public getHeight() {
         return this.sprite.height
     }
     public reset_damageFlag() {
         this.damageFlag = false
     }
-    public createDamageEffect(sound = true) {
+    public createDamageEffect(sound = true, small = false) {
         const r = 10
         const n = 10
         for (let i = 0; i < n; i++) {
-            Obj.effect_func("damage", this.x + 2 * Math.random() * r - r, this.y + 2 * Math.random() * r - r)
+            Obj.effect_func(small ? "small_damage" : "damage", this.x + 2 * Math.random() * r - r, this.y + 2 * Math.random() * r - r)
         }
-        if(sound)Sound.play("damage", false, GlobalParam.se_volume)
+        if (sound) Sound.play("damage", false, GlobalParam.se_volume)
     }
-    public static SetGlobalContainer(container: PIXI.Container){
+    public static SetGlobalContainer(container: PIXI.Container) {
         this.container = container
     }
-    protected setAlpha(alpha :number){
+    protected setAlpha(alpha: number) {
         this.sprite.alpha = alpha
     }
-    private release(){
-        this.sprite.destroy()
+    private release() {
+        this.sprite.destroy({ baseTexture: false })
     }
     protected updatePlayerPosition() {
         Obj.px = this.x
         Obj.py = this.y
     }
     public calcAngleToPlayer() {
-        return -Math.atan2(this.x - Obj.px, this.y - Obj.py)
+        return this.calcAngle(Obj.px, Obj.py)
     }
     public calcAngleToTarget(target: Obj) {
-        if(!target)return this.is_enemy ? Math.PI : 0
-        return -Math.atan2(this.x - target.x, this.y - target.y)
+        if (!target) return this.is_enemy ? Math.PI : 0
+        return this.calcAngle(target.x, target.y)
+    }
+    public calcAngle(x: number, y: number) {
+        return -Math.atan2(this.x - x, this.y - y)
     }
     protected toRadian(angle: number) {
         return angle * Math.PI / 180

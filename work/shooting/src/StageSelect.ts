@@ -1,11 +1,11 @@
 import * as PIXI from "pixi.js"
-import {Scene} from './Scene';
-import {WIDTH, HEIGHT, GlobalParam} from './global'
-import {Key} from './key'
+import { Scene } from './Scene';
+import { WIDTH, HEIGHT, GlobalParam } from './global'
+import { Key } from './key'
 import { ItemManager } from './ItemManager';
 export class StageSelect extends Scene {
 	private key: Key
-	private loopID: number
+	private loopID: any
 	private item_manager: ItemManager
 	constructor(container: PIXI.Container) {
 		super()

@@ -1,7 +1,7 @@
 import * as PIXI from "pixi.js"
 import { Scene } from './Scene';
-import {WIDTH, HEIGHT, GlobalParam, RAPID, RAPID_COST, SPEED, SPEED_COST, SIZE, SIZE_COST, SUB, SUB_COST, CHILD, CHILD_COST, save} from './global'
-import {Key} from './key'
+import { WIDTH, HEIGHT, GlobalParam, RAPID, RAPID_COST, SPEED, SPEED_COST, SIZE, SIZE_COST, SUB, SUB_COST, CHILD, CHILD_COST, save } from './global'
+import { Key } from './key'
 import { ItemManager } from './ItemManager';
 import { GraphicManager } from './GraphicManager';
 import { Sound } from "./Sound";
@@ -27,7 +27,7 @@ const explain_text_sy = HEIGHT * 0.9
 
 export class Upgrade extends Scene {
     private key: Key
-    private loopID: number
+    private loopID: any
     private item_manager: ItemManager
     private item: ItemManager[] = []
     private focussing_item: ItemManager
@@ -60,7 +60,7 @@ export class Upgrade extends Scene {
         this.item_manager.appendItem("連射速度", headline_word_size, [0xf0f0f0, 0x999999], true)
         item = new ItemManager(select_sx, select_sy, equip_box_w, equip_box_h, container,
             () => this.decide2(), () => this.cancel2(), 0, 0, "decide", "back", "fail", 0x4B0000)
-        for (let i = 0; i < RAPID.length; i++){
+        for (let i = 0; i < RAPID.length; i++) {
             item.appendItem(RAPID[i] + "回/秒(cost " + RAPID_COST[i] + ")", equip_word_size, [0xf0f0f0, 0x999999], true,
                 GlobalParam.save_data.unlock.rapid[i])
         }
@@ -70,8 +70,8 @@ export class Upgrade extends Scene {
         this.item_manager.appendItem("砲口初速", headline_word_size, [0xf0f0f0, 0x999999], true)
         item = new ItemManager(select_sx, select_sy, equip_box_w, equip_box_h, container,
             () => this.decide2(), () => this.cancel2(), 0, 0, "decide", "back", "fail", 0x4B0000)
-        for (let i = 0; i < SPEED.length; i++){
-            item.appendItem("×"+ SPEED[i] +"(cost " + SPEED_COST[i] + ")", equip_word_size, [0xf0f0f0, 0x999999], true,
+        for (let i = 0; i < SPEED.length; i++) {
+            item.appendItem("×" + SPEED[i] + "(cost " + SPEED_COST[i] + ")", equip_word_size, [0xf0f0f0, 0x999999], true,
                 GlobalParam.save_data.unlock.speed[i])
         }
         item.hide()
@@ -80,8 +80,8 @@ export class Upgrade extends Scene {
         this.item_manager.appendItem("寸法", headline_word_size, [0xf0f0f0, 0x999999], true)
         item = new ItemManager(select_sx, select_sy, equip_box_w, equip_box_h, container,
             () => this.decide2(), () => this.cancel2(), 0, 0, "decide", "back", "fail", 0x4B0000)
-        for (let i = 0; i < SIZE.length; i++){
-            item.appendItem("×"+ SIZE[i] +"(cost " + SIZE_COST[i] + ")", equip_word_size, [0xf0f0f0, 0x999999], true,
+        for (let i = 0; i < SIZE.length; i++) {
+            item.appendItem("×" + SIZE[i] + "(cost " + SIZE_COST[i] + ")", equip_word_size, [0xf0f0f0, 0x999999], true,
                 GlobalParam.save_data.unlock.size[i])
         }
         item.hide()
@@ -90,8 +90,8 @@ export class Upgrade extends Scene {
         this.item_manager.appendItem("予備兵器", headline_word_size, [0xf0f0f0, 0x999999], true)
         item = new ItemManager(select_sx, select_sy, equip_box_w, equip_box_h, container,
             () => this.decide2(), () => this.cancel2(), 0, 0, "decide", "back", "fail", 0x4B0000)
-        for (let i = 0; i < SUB.length; i++){
-            item.appendItem(SUB[i] +"(cost " + SUB_COST[i] + ")", equip_word_size, [0xf0f0f0, 0x999999], true,
+        for (let i = 0; i < SUB.length; i++) {
+            item.appendItem(SUB[i] + "(cost " + SUB_COST[i] + ")", equip_word_size, [0xf0f0f0, 0x999999], true,
                 GlobalParam.save_data.unlock.sub[i])
         }
         item.hide()
@@ -100,7 +100,7 @@ export class Upgrade extends Scene {
         this.item_manager.appendItem("子機", headline_word_size, [0xf0f0f0, 0x999999], true)
         item = new ItemManager(select_sx, select_sy, equip_box_w, equip_box_h, container,
             () => this.decide2(), () => this.cancel2(), 0, 0, "decide", "back", "fail", 0x4B0000)
-        for (let i = 0; i < CHILD.length; i++){
+        for (let i = 0; i < CHILD.length; i++) {
             item.appendItem(CHILD[i] + "個(cost " + CHILD_COST[i] + ")", equip_word_size, [0xf0f0f0, 0x999999], true,
                 GlobalParam.save_data.unlock.child[i])
         }
@@ -211,13 +211,13 @@ export class Upgrade extends Scene {
             this.item_equipment = new ItemManager(sx + item_w + padding1, sy, equip_box_w, item_h, this.container,
                 undefined, undefined, 0, 0, "", "", "", 0x4B0000
             )
-            for (let i = 0; i < this.item.length; i++){
+            for (let i = 0; i < this.item.length; i++) {
                 this.item_equipment.appendItem(this.item[i].getstr(), equip_word_size, [0xffffff, 0x999999], true)
             }
             this.item_equipment.no_focus()
         }
         else {
-            for (let i = 0; i < this.item.length; i++){
+            for (let i = 0; i < this.item.length; i++) {
                 this.item_equipment.change_str(i, this.item[i].getstr())
             }
         }

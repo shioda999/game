@@ -15,7 +15,7 @@ export class BackGround{
                 r.rand() % 200 + 120, r.rand() % 10 + 10))
         }
         this.stars.forEach(n => n.update())
-        this.stars = this.stars.filter(n => n.check())
+        this.stars = this.stars.filter(n => n.check_and_delete())
     }
     private getcolor() {
         const r = [1000, 800, 300, 30]
@@ -33,6 +33,7 @@ export class BackGround{
 }
 class Star{
     private star: PIXI.Container
+    private graph: PIXI.Graphics
     constructor(private container: PIXI.Container, private x: number, private y:number, private color: number, private distance: number, private bright: number) {
         this.star = new PIXI.Container()
         const graph = new PIXI.Graphics()
@@ -53,15 +54,19 @@ class Star{
         this.star.position.set(x, y)
         this.star.zIndex = -1
         this.container.addChild(this.star)
+        this.graph = graph
     }
     public update() {
         this.star.y += 100 / this.distance
     }
-    public check() {
-        return this.star.y <= HEIGHT + 10
+    public check_and_delete() {
+        if (this.star.y <= HEIGHT + 10) return true
+        this.container.removeChild(this.star)
+        this.star.destroy()
+        return false
     }
 }
-class MyRand{
+export class MyRand{
     readonly A = 1025
     readonly B = 625
     readonly M = 1024 * 1024
